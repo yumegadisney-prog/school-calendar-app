@@ -1,4 +1,4 @@
-<!-- test --><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
@@ -9,556 +9,124 @@
   <title>📅 学校書類カレンダー登録</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-    :root {
-      --coral:      #F07070;
-      --coral-l:    #FFE8E8;
-      --coral-ll:   #FFF2F2;
-      --coral-d:    #D05050;
-      --bg:         #FFF5F5;
-      --card:       #FFFFFF;
-      --text:       #3B2525;
-      --muted:      #A07878;
-      --border:     #EDD8D8;
-      --radius:     18px;
-      --shadow:     0 2px 20px rgba(200,80,80,.10);
-    }
-
-    body {
-      font-family: -apple-system, 'Hiragino Sans', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding-bottom: env(safe-area-inset-bottom, 24px);
-    }
-
-    /* ── Header ── */
-    header {
-      background: linear-gradient(135deg, var(--coral) 0%, var(--coral-d) 100%);
-      color: #fff;
-      padding: 20px 20px calc(24px + env(safe-area-inset-top, 0px));
-      padding-top: calc(16px + env(safe-area-inset-top, 0px));
-      text-align: center;
-    }
-    header .emoji { font-size: 40px; line-height: 1; }
-    header h1 { font-size: 18px; font-weight: 700; margin-top: 6px; }
-    header p  { font-size: 12px; opacity: .85; margin-top: 3px; }
-
-    /* ── Tabs ── */
-    .tabs {
-      display: flex;
-      background: var(--card);
-      border-bottom: 1.5px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    .tab {
-      flex: 1;
-      padding: 13px 6px;
-      text-align: center;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--muted);
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-      transition: .15s;
-    }
-    .tab.active {
-      color: var(--coral-d);
-      border-bottom-color: var(--coral);
-    }
-
-    /* ── Panels ── */
-    .panel { display: none; padding: 16px; }
-    .panel.active { display: block; }
-
-    /* ── Card ── */
-    .card {
-      background: var(--card);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      margin-bottom: 14px;
-    }
-    .card-head {
-      display: flex; align-items: center; gap: 9px;
-      padding: 14px 16px 12px;
-      border-bottom: 1px solid var(--border);
-    }
-    .num {
-      background: var(--coral);
-      color: #fff;
-      width: 24px; height: 24px;
-      border-radius: 50%;
-      font-size: 12px; font-weight: 700;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-    .card-head h2 { font-size: 14px; font-weight: 700; }
-    .card-body { padding: 14px 16px; }
-
-    /* ── Upload area ── */
-    #drop-zone {
-      border: 2.5px dashed var(--coral);
-      border-radius: 14px;
-      background: var(--coral-ll);
-      text-align: center;
-      padding: 32px 16px;
-      cursor: pointer;
-      transition: .2s;
-      touch-action: manipulation;
-    }
-    #drop-zone.drag-over { background: var(--coral-l); transform: scale(1.01); }
-    #drop-zone .dz-icon { font-size: 48px; }
-    #drop-zone .dz-main { font-size: 15px; font-weight: 700; color: var(--coral-d); margin-top: 8px; }
-    #drop-zone .dz-sub  { font-size: 12px; color: var(--muted); margin-top: 4px; }
-    #file-input { display: none; }
-
-    /* Camera + library buttons */
-    .upload-btns { display: flex; gap: 10px; margin-top: 12px; }
-    .upload-btn {
-      flex: 1; padding: 13px 6px;
-      border-radius: 12px;
-      font-size: 14px; font-weight: 600;
-      border: none; cursor: pointer;
-      transition: .15s; text-align: center;
-    }
-    .upload-btn:active { transform: scale(.96); }
-    .btn-camera  { background: var(--coral); color: #fff; }
-    .btn-library { background: var(--coral-l); color: var(--coral-d); border: 1.5px solid var(--coral); }
-    #input-camera  { display: none; }
-    #input-library { display: none; }
-
-    /* Preview */
-    #preview-wrap { display: none; }
-    #preview-img {
-      width: 100%; max-height: 260px;
-      object-fit: contain;
-      border-radius: 12px;
-      border: 1.5px solid var(--border);
-      background: #fafafa;
-    }
-    .preview-bar {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-top: 8px;
-    }
-    .preview-name { font-size: 12px; color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .btn-reselect {
-      font-size: 12px; color: var(--coral-d);
-      background: var(--coral-l);
-      border: 1px solid var(--coral);
-      padding: 5px 12px; border-radius: 20px;
-      cursor: pointer; flex-shrink: 0; margin-left: 8px;
-    }
-
-    /* ── Settings ── */
-    .setting-row {
-      display: flex; align-items: center; gap: 10px;
-      padding: 11px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .setting-row:last-child { border-bottom: none; }
-    .setting-label { font-size: 12px; color: var(--muted); width: 72px; flex-shrink: 0; }
-    .setting-value { font-size: 14px; font-weight: 600; flex: 1; }
-    .dot { width: 13px; height: 13px; border-radius: 50%; background: #F07070; flex-shrink: 0; }
-    select, input[type="text"] {
-      font-size: 14px; font-weight: 600;
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      padding: 7px 10px;
-      color: var(--text); background: #fff;
-      outline: none; flex: 1; width: 100%;
-      -webkit-appearance: none;
-    }
-    select:focus, input[type="text"]:focus { border-color: var(--coral); }
-
-    /* ── Prompt box ── */
-    #prompt-box {
-      background: #F9F2F2;
-      border: 1.5px solid var(--border);
-      border-radius: 12px;
-      padding: 14px;
-      font-size: 13px; line-height: 1.75;
-      color: #5A3030;
-      white-space: pre-wrap; word-break: break-all;
-      min-height: 120px;
-      user-select: all;
-    }
-    .prompt-note { font-size: 11px; color: var(--muted); margin-top: 8px; text-align: center; }
-
-    /* ── Main action buttons ── */
-    .action-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
-    .btn {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      width: 100%; padding: 16px;
-      border-radius: 14px;
-      font-size: 16px; font-weight: 700;
-      border: none; cursor: pointer;
-      transition: .2s; letter-spacing: .02em;
-      -webkit-appearance: none;
-    }
-    .btn:active { transform: scale(.97); }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--coral) 0%, var(--coral-d) 100%);
-      color: #fff;
-      box-shadow: 0 4px 16px rgba(200,80,80,.3);
-    }
-    .btn-outline {
-      background: #fff;
-      color: var(--coral-d);
-      border: 2px solid var(--coral);
-    }
-    .btn:disabled { opacity: .4; cursor: default; transform: none; }
-
-    /* ── How to (iPhone tab) ── */
-    .howto-section { margin-bottom: 16px; }
-    .howto-section h3 {
-      font-size: 13px; font-weight: 700; color: var(--muted);
-      letter-spacing: .05em; margin-bottom: 10px;
-    }
-    .step-row {
-      display: flex; gap: 12px; margin-bottom: 10px; align-items: flex-start;
-    }
-    .step-num {
-      background: var(--coral-l); color: var(--coral-d);
-      font-size: 12px; font-weight: 700;
-      width: 26px; height: 26px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-    .step-text { font-size: 14px; line-height: 1.55; padding-top: 3px; }
-    .step-text strong { color: var(--coral-d); }
-    .step-text .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
-
-    .tip-box {
-      background: #FFF8E8;
-      border: 1.5px solid #F0D890;
-      border-radius: 12px;
-      padding: 13px 14px;
-      font-size: 13px; line-height: 1.6;
-      color: #5A4A10;
-    }
-    .tip-box .tip-title { font-weight: 700; margin-bottom: 4px; }
-
-    .setup-box {
-      background: var(--coral-ll);
-      border: 1.5px solid var(--coral);
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 14px;
-    }
-    .setup-box h3 { font-size: 14px; font-weight: 700; color: var(--coral-d); margin-bottom: 10px; }
-
-    /* ── Toast ── */
-    #toast {
-      position: fixed;
-      bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-      left: 50%; transform: translateX(-50%) translateY(100px);
-      background: #2D1A1A; color: #fff;
-      padding: 13px 22px;
-      border-radius: 30px;
-      font-size: 14px; font-weight: 600;
-      transition: transform .3s ease;
-      z-index: 999; white-space: nowrap;
-      box-shadow: 0 4px 20px rgba(0,0,0,.25);
-    }
-    #toast.show { transform: translateX(-50%) translateY(0); }
-
-    /* ── Footer ── */
-    .footer { text-align: center; font-size: 11px; color: var(--muted); padding: 4px 0 12px; }
+    :root { --coral:#F07070;--coral-l:#FFE8E8;--coral-ll:#FFF2F2;--coral-d:#D05050;--bg:#FFF5F5;--card:#FFFFFF;--text:#3B2525;--muted:#A07878;--border:#EDD8D8;--radius:18px;--shadow:0 2px 20px rgba(200,80,80,.10); }
+    body { font-family:-apple-system,'Hiragino Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:env(safe-area-inset-bottom,24px); }
+    header { background:linear-gradient(135deg,var(--coral) 0%,var(--coral-d) 100%);color:#fff;padding:20px 20px calc(24px + env(safe-area-inset-top,0px));padding-top:calc(16px + env(safe-area-inset-top,0px));text-align:center; }
+    header .emoji{font-size:40px;line-height:1;}header h1{font-size:18px;font-weight:700;margin-top:6px;}header p{font-size:12px;opacity:.85;margin-top:3px;}
+    .tabs{display:flex;background:var(--card);border-bottom:1.5px solid var(--border);position:sticky;top:0;z-index:10;}
+    .tab{flex:1;padding:13px 6px;text-align:center;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;transition:.15s;}
+    .tab.active{color:var(--coral-d);border-bottom-color:var(--coral);}
+    .panel{display:none;padding:16px;}.panel.active{display:block;}
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px;}
+    .card-head{display:flex;align-items:center;gap:9px;padding:14px 16px 12px;border-bottom:1px solid var(--border);}
+    .num{background:var(--coral);color:#fff;width:24px;height:24px;border-radius:50%;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .card-head h2{font-size:14px;font-weight:700;}.card-body{padding:14px 16px;}    #drop-zone{border:2.5px dashed var(--coral);border-radius:14px;background:var(--coral-ll);text-align:center;padding:32px 16px;cursor:pointer;transition:.2s;touch-action:manipulation;}
+    #drop-zone.drag-over{background:var(--coral-l);transform:scale(1.01);}
+    #drop-zone .dz-icon{font-size:48px;}#drop-zone .dz-main{font-size:15px;font-weight:700;color:var(--coral-d);margin-top:8px;}#drop-zone .dz-sub{font-size:12px;color:var(--muted);margin-top:4px;}
+    #file-input,#input-camera,#input-library{display:none;}
+    .upload-btns{display:flex;gap:10px;margin-top:12px;}
+    .upload-btn{flex:1;padding:13px 6px;border-radius:12px;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:.15s;text-align:center;}
+    .upload-btn:active{transform:scale(.96);}
+    .btn-camera{background:var(--coral);color:#fff;}.btn-library{background:var(--coral-l);color:var(--coral-d);border:1.5px solid var(--coral);}
+    #preview-wrap{display:none;}
+    #preview-img{width:100%;max-height:260px;object-fit:contain;border-radius:12px;border:1.5px solid var(--border);background:#fafafa;}
+    .preview-bar{display:flex;align-items:center;justify-content:space-between;margin-top:8px;}
+    .preview-name{font-size:12px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .btn-reselect{font-size:12px;color:var(--coral-d);background:var(--coral-l);border:1px solid var(--coral);padding:5px 12px;border-radius:20px;cursor:pointer;flex-shrink:0;margin-left:8px;}
+    .setting-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--border);}
+    .setting-row:last-child{border-bottom:none;}
+    .setting-label{font-size:12px;color:var(--muted);width:72px;flex-shrink:0;}
+    .setting-value{font-size:14px;font-weight:600;flex:1;}
+    .dot{width:13px;height:13px;border-radius:50%;background:#F07070;flex-shrink:0;}
+    select,input[type="text"]{font-size:14px;font-weight:600;border:1.5px solid var(--border);border-radius:10px;padding:7px 10px;color:var(--text);background:#fff;outline:none;flex:1;width:100%;-webkit-appearance:none;}
+    select:focus,input[type="text"]:focus{border-color:var(--coral);}
+    #prompt-box{background:#F9F2F2;border:1.5px solid var(--border);border-radius:12px;padding:14px;font-size:13px;line-height:1.75;color:#5A3030;white-space:pre-wrap;word-break:break-all;min-height:120px;user-select:all;}
+    .prompt-note{font-size:11px;color:var(--muted);margin-top:8px;text-align:center;}
+    .action-btns{display:flex;flex-direction:column;gap:10px;margin-top:4px;}
+    .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;border-radius:14px;font-size:16px;font-weight:700;border:none;cursor:pointer;transition:.2s;letter-spacing:.02em;-webkit-appearance:none;}
+    .btn:active{transform:scale(.97);}
+    .btn-primary{background:linear-gradient(135deg,var(--coral) 0%,var(--coral-d) 100%);color:#fff;box-shadow:0 4px 16px rgba(200,80,80,.3);}
+    .btn-outline{background:#fff;color:var(--coral-d);border:2px solid var(--coral);}
+    .btn:disabled{opacity:.4;cursor:default;transform:none;}    .howto-section{margin-bottom:16px;}.howto-section h3{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.05em;margin-bottom:10px;}
+    .step-row{display:flex;gap:12px;margin-bottom:10px;align-items:flex-start;}
+    .step-num{background:var(--coral-l);color:var(--coral-d);font-size:12px;font-weight:700;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .step-text{font-size:14px;line-height:1.55;padding-top:3px;}
+    .step-text strong{color:var(--coral-d);}.step-text .sub{font-size:12px;color:var(--muted);margin-top:2px;}
+    .tip-box{background:#FFF8E8;border:1.5px solid #F0D890;border-radius:12px;padding:13px 14px;font-size:13px;line-height:1.6;color:#5A4A10;}
+    .tip-box .tip-title{font-weight:700;margin-bottom:4px;}
+    .setup-box{background:var(--coral-ll);border:1.5px solid var(--coral);border-radius:12px;padding:14px;margin-bottom:14px;}
+    .setup-box h3{font-size:14px;font-weight:700;color:var(--coral-d);margin-bottom:10px;}
+    #toast{position:fixed;bottom:calc(24px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%) translateY(100px);background:#2D1A1A;color:#fff;padding:13px 22px;border-radius:30px;font-size:14px;font-weight:600;transition:transform .3s ease;z-index:999;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.25);}
+    #toast.show{transform:translateX(-50%) translateY(0);}
+    .footer{text-align:center;font-size:11px;color:var(--muted);padding:4px 0 12px;}
   </style>
 </head>
 <body>
-
-<header>
-  <div class="emoji">📅</div>
-  <h1>学校書類 → カレンダー自動登録</h1>
-  <p>書類を撮影してClaudeに送るだけ ✨</p>
-</header>
-
-<!-- Tabs -->
+<header><div class="emoji">📅</div><h1>学校書類 → カレンダー自動登録</h1><p>書類を撮影してClaudeに送るだけ ✨</p></header>
 <div class="tabs">
   <div class="tab active" onclick="switchTab('main')">📋 登録する</div>
   <div class="tab" onclick="switchTab('phone')">📱 iPhoneから使う</div>
 </div>
-
-<!-- ══ Panel: Main ══ -->
 <div class="panel active" id="panel-main">
-
-  <!-- Step 1 -->
-  <div class="card">
-    <div class="card-head"><div class="num">1</div><h2>書類の写真を選ぶ</h2></div>
-    <div class="card-body">
-
-      <!-- Desktop drop zone -->
-      <div id="drop-zone" onclick="document.getElementById('input-library').click()">
-        <div class="dz-icon">📄</div>
-        <div class="dz-main">ここをタップ / 写真をドロップ</div>
-        <div class="dz-sub">JPEG・PNG・HEIC など対応</div>
-      </div>
-
-      <!-- Mobile camera buttons -->
-      <div class="upload-btns">
-        <button class="upload-btn btn-camera" onclick="document.getElementById('input-camera').click()">
-          📷 カメラで撮影
-        </button>
-        <button class="upload-btn btn-library" onclick="document.getElementById('input-library').click()">
-          🖼 ライブラリから選ぶ
-        </button>
-      </div>
-
-      <input type="file" id="input-camera"  accept="image/*" capture="environment">
-      <input type="file" id="input-library" accept="image/*">
-
-      <!-- Preview -->
-      <div id="preview-wrap">
-        <img id="preview-img" src="" alt="プレビュー">
-        <div class="preview-bar">
-          <span class="preview-name" id="preview-name"></span>
-          <span class="btn-reselect" onclick="document.getElementById('input-library').click()">✏️ 選び直す</span>
-        </div>
-      </div>
-
+  <div class="card"><div class="card-head"><div class="num">1</div><h2>書類の写真を選ぶ</h2></div><div class="card-body">
+    <div id="drop-zone" onclick="document.getElementById('input-library').click()">
+      <div class="dz-icon">📄</div><div class="dz-main">ここをタップ / 写真をドロップ</div><div class="dz-sub">JPEG・PNG・HEIC など対応</div>
     </div>
-  </div>
-
-  <!-- Step 2 -->
-  <div class="card">
-    <div class="card-head"><div class="num">2</div><h2>カレンダー設定を確認</h2></div>
-    <div class="card-body">
-      <div class="setting-row">
-        <span class="setting-label">カレンダー</span>
-        <span class="setting-value">✨悠希&葵✨</span>
-      </div>
-      <div class="setting-row">
-        <span class="setting-label">ラベル</span>
-        <div class="dot"></div>
-        <span class="setting-value">コーラル・ピンク</span>
-      </div>
-      <div class="setting-row">
-        <span class="setting-label">登録先</span>
-        <select id="reg-target" onchange="updatePrompt()">
-          <option value="both">TimeTree ＋ Google両方</option>
-          <option value="timetree">TimeTree のみ</option>
-          <option value="google">Googleカレンダーのみ</option>
-        </select>
-      </div>
-      <div class="setting-row">
-        <span class="setting-label">追加メモ</span>
-        <input type="text" id="extra-note" placeholder="あれば入力…" oninput="updatePrompt()">
-      </div>
+    <div class="upload-btns">
+      <button class="upload-btn btn-camera" onclick="document.getElementById('input-camera').click()">📷 カメラで撮影</button>
+      <button class="upload-btn btn-library" onclick="document.getElementById('input-library').click()">🖼 ライブラリから選ぶ</button>
     </div>
-  </div>
-
-  <!-- Step 3 -->
-  <div class="card">
-    <div class="card-head"><div class="num">3</div><h2>生成されたプロンプトを確認</h2></div>
-    <div class="card-body">
-      <div id="prompt-box">（写真を選ぶと自動生成されます）</div>
-      <p class="prompt-note">※ Coworkに画像と一緒にペーストしてください</p>
+    <input type="file" id="input-camera" accept="image/*" capture="environment">
+    <input type="file" id="input-library" accept="image/*">
+    <div id="preview-wrap"><img id="preview-img" src="" alt="プレビュー">
+      <div class="preview-bar"><span class="preview-name" id="preview-name"></span><span class="btn-reselect" onclick="document.getElementById('input-library').click()">✏️ 選び直す</span></div>
     </div>
-  </div>
-
-  <!-- Action buttons -->
+  </div></div>  <div class="card"><div class="card-head"><div class="num">2</div><h2>カレンダー設定を確認</h2></div><div class="card-body">
+    <div class="setting-row"><span class="setting-label">カレンダー</span><span class="setting-value">✨悠希&葵✨</span></div>
+    <div class="setting-row"><span class="setting-label">ラベル</span><div class="dot"></div><span class="setting-value">コーラル・ピンク</span></div>
+    <div class="setting-row"><span class="setting-label">登録先</span><select id="reg-target" onchange="updatePrompt()"><option value="both">TimeTree ＋ Google両方</option><option value="timetree">TimeTree のみ</option><option value="google">Googleカレンダーのみ</option></select></div>
+    <div class="setting-row"><span class="setting-label">追加メモ</span><input type="text" id="extra-note" placeholder="あれば入力…" oninput="updatePrompt()"></div>
+  </div></div>
+  <div class="card"><div class="card-head"><div class="num">3</div><h2>生成されたプロンプトを確認</h2></div><div class="card-body">
+    <div id="prompt-box">（写真を選ぶと自動生成されます）</div>
+    <p class="prompt-note">※ Coworkに画像と一緒にペーストしてください</p>
+  </div></div>
   <div class="action-btns">
-    <button class="btn btn-primary" id="btn-copy" onclick="copyPrompt()" disabled>
-      📋 プロンプトをコピー
-    </button>
-    <button class="btn btn-outline" onclick="resetAll()">
-      🔄 リセット
-    </button>
+    <button class="btn btn-primary" id="btn-copy" onclick="copyPrompt()" disabled>📋 プロンプトをコピー</button>
+    <button class="btn btn-outline" onclick="resetAll()">🔄 リセット</button>
   </div>
-
   <div class="footer">by Claude（Cowork） · 書類の内容はClaudeが自動で読み取ります</div>
 </div>
-
-
-<!-- ══ Panel: iPhone ══ -->
 <div class="panel" id="panel-phone">
-
-  <!-- Setup -->
-  <div class="setup-box">
-    <h3>🍎 iPhoneで使えるようにする（初回のみ）</h3>
-    <div class="step-row">
-      <div class="step-num">1</div>
-      <div class="step-text">
-        MacでこのHTMLファイルを
-        <strong>iCloud Drive</strong> に保存する
-        <div class="sub">Finder → iCloud Drive → 好きなフォルダにドラッグ</div>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-num">2</div>
-      <div class="step-text">
-        iPhoneの <strong>Safari</strong> を開く
-        <div class="sub">Chromeではなく Safari を使ってください</div>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-num">3</div>
-      <div class="step-text">
-        <strong>ファイルアプリ</strong> → iCloud Drive → このファイルをタップ
-        <div class="sub">「school-calendar-app.html」を選ぶとSafariで開きます</div>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-num">4</div>
-      <div class="step-text">
-        共有ボタン → <strong>「ホーム画面に追加」</strong>でアイコン化！
-        <div class="sub">次からアプリみたいにホーム画面から開けます 🎉</div>
-      </div>
-    </div>
+  <div class="setup-box"><h3>🍎 iPhoneで使えるようにする（初回のみ）</h3>
+    <div class="step-row"><div class="step-num">1</div><div class="step-text">MacでこのHTMLファイルを<strong>iCloud Drive</strong>に保存する<div class="sub">Finder → iCloud Drive → 好きなフォルダにドラッグ</div></div></div>
+    <div class="step-row"><div class="step-num">2</div><div class="step-text">iPhoneの<strong>Safari</strong>を開く<div class="sub">Chromeではなく Safari を使ってください</div></div></div>
+    <div class="step-row"><div class="step-num">3</div><div class="step-text"><strong>ファイルアプリ</strong> → iCloud Drive → このファイルをタップ<div class="sub">「school-calendar-app.html」を選ぶとSafariで開きます</div></div></div>
+    <div class="step-row"><div class="step-num">4</div><div class="step-text">共有ボタン → <strong>「ホーム画面に追加」</strong>でアイコン化！<div class="sub">次からアプリみたいにホーム画面から開けます 🎉</div></div></div>
   </div>
-
-  <!-- Workflow -->
-  <div class="card">
-    <div class="card-head"><div class="num" style="background:#5B9BD5">📱</div><h2>iPhoneでの使い方（毎回）</h2></div>
-    <div class="card-body">
-      <div class="step-row">
-        <div class="step-num">1</div>
-        <div class="step-text">
-          ホーム画面のアイコン（またはファイルアプリ）からアプリを開く
-        </div>
-      </div>
-      <div class="step-row">
-        <div class="step-num">2</div>
-        <div class="step-text">
-          <strong>📷 カメラで撮影</strong> ボタンで書類を直接撮る
-        </div>
-      </div>
-      <div class="step-row">
-        <div class="step-num">3</div>
-        <div class="step-text">
-          <strong>プロンプトをコピー</strong> ボタンを押す
-        </div>
-      </div>
-      <div class="step-row">
-        <div class="step-num">4</div>
-        <div class="step-text">
-          写真アプリで撮った写真を <strong>AirDrop</strong> でMacに送る
-        </div>
-      </div>
-      <div class="step-row">
-        <div class="step-num">5</div>
-        <div class="step-text">
-          MacのCoworkを開き、写真をドロップ＋ペースト（プロンプトはユニバーサルクリップボードで自動共有）して送信！
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tip -->
-  <div class="tip-box">
-    <div class="tip-title">💡 ユニバーサルクリップボードについて</div>
-    同じApple IDでサインインしたiPhone・MacはクリップボードがWi-Fi経由で自動共有されます。iPhoneでコピーしたプロンプトは<strong>そのままMacでペーストできます</strong>（Bluetooth・Wi-FiがONの状態で）。
-  </div>
-
+  <div class="card"><div class="card-head"><div class="num" style="background:#5B9BD5">📱</div><h2>iPhoneでの使い方（毎回）</h2></div><div class="card-body">
+    <div class="step-row"><div class="step-num">1</div><div class="step-text">ホーム画面のアイコンからアプリを開く</div></div>
+    <div class="step-row"><div class="step-num">2</div><div class="step-text"><strong>📷 カメラで撮影</strong>ボタンで書類を直接撮る</div></div>
+    <div class="step-row"><div class="step-num">3</div><div class="step-text"><strong>プロンプトをコピー</strong>ボタンを押す</div></div>
+    <div class="step-row"><div class="step-num">4</div><div class="step-text">写真アプリで撮った写真を<strong>AirDrop</strong>でMacに送る</div></div>
+    <div class="step-row"><div class="step-num">5</div><div class="step-text">MacのCoworkを開き、写真をドロップ＋ペースト（プロンプトはユニバーサルクリップボードで自動共有）して送信！</div></div>
+  </div></div>
+  <div class="tip-box"><div class="tip-title">💡 ユニバーサルクリップボードについて</div>同じApple IDでサインインしたiPhone・MacはクリップボードがWi-Fi経由で自動共有されます。iPhoneでコピーしたプロンプトは<strong>そのままMacでペーストできます</strong>（Bluetooth・Wi-FiがONの状態で）。</div>
 </div>
-
-<!-- Toast -->
-<div id="toast">✅ コピーしました！Coworkに貼り付けてね 🎉</div>
-
-<script>
-  // ── Tab switching ──
-  function switchTab(name) {
-    document.querySelectorAll('.tab').forEach((t,i) => {
-      t.classList.toggle('active', (name==='main' && i===0) || (name==='phone' && i===1));
-    });
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('panel-' + name).classList.add('active');
-  }
-
-  // ── File handling ──
-  let selectedFile = null;
-
-  function handleFile(file) {
-    if (!file || !file.type.startsWith('image/')) { alert('画像ファイルを選んでください'); return; }
-    selectedFile = file;
-    const reader = new FileReader();
-    reader.onload = e => {
-      document.getElementById('drop-zone').style.display = 'none';
-      document.getElementById('preview-wrap').style.display = 'block';
-      document.getElementById('preview-img').src = e.target.result;
-      document.getElementById('preview-name').textContent = file.name;
-      document.getElementById('btn-copy').disabled = false;
-      updatePrompt();
-    };
-    reader.readAsDataURL(file);
-  }
-
-  document.getElementById('input-camera').addEventListener('change', e => { if(e.target.files[0]) handleFile(e.target.files[0]); });
-  document.getElementById('input-library').addEventListener('change', e => { if(e.target.files[0]) handleFile(e.target.files[0]); });
-
-  // Drag & drop
-  const dz = document.getElementById('drop-zone');
-  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
-  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
-  dz.addEventListener('drop', e => {
-    e.preventDefault(); dz.classList.remove('drag-over');
-    if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
-  });
-
-  // ── Prompt generation ──
-  function updatePrompt() {
-    if (!selectedFile) return;
-    const target = document.getElementById('reg-target').value;
-    const note = document.getElementById('extra-note').value.trim();
-    const targetText = {
-      both:     'TimeTree（✨悠希&葵✨）と Googleカレンダー（学校行事）の両方',
-      timetree: 'TimeTree（✨悠希&葵✨）',
-      google:   'Googleカレンダー（学校行事）'
-    }[target];
-
-    let p = `添付の書類写真を読み取って、学校行事をカレンダーに登録してください。
-
-【登録先】${targetText}
-【ラベル】コーラル・ピンク（学校行事）
-【ルール】
-・日程・時間・イベント名を正確に読み取る
-・複数日程があればすべて登録する
-・参観日など特記事項はメモに含める`;
-
-    if (note) p += `\n\n【追加メモ】${note}`;
-
-    document.getElementById('prompt-box').textContent = p;
-  }
-
-  // ── Copy ──
-  function copyPrompt() {
-    const text = document.getElementById('prompt-box').textContent;
-    (navigator.clipboard?.writeText(text) ?? Promise.reject())
-      .then(() => showToast('✅ コピーしました！Coworkに画像と一緒に貼り付けてね 🎉'))
-      .catch(() => {
-        const ta = document.createElement('textarea');
-        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
-        document.body.appendChild(ta); ta.focus(); ta.select();
-        try { document.execCommand('copy'); showToast('✅ コピーしました！'); }
-        catch { showToast('⚠️ 手動でコピーしてください'); }
-        document.body.removeChild(ta);
-      });
-  }
-
-  // ── Toast ──
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3500);
-  }
-
-  // ── Reset ──
-  function resetAll() {
-    selectedFile = null;
-    ['input-camera','input-library'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('drop-zone').style.display = '';
-    document.getElementById('preview-wrap').style.display = 'none';
-    document.getElementById('preview-img').src = '';
-    document.getElementById('prompt-box').textContent = '（写真を選ぶと自動生成されます）';
-    document.getElementById('btn-copy').disabled = true;
-    document.getElementById('extra-note').value = '';
-    document.getElementById('reg-target').value = 'both';
-  }
+<div id="toast">✅ コピーしました！</div><script>
+  function switchTab(name){document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',(name==='main'&&i===0)||(name==='phone'&&i===1));});document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById('panel-'+name).classList.add('active');}
+  let selectedFile=null;
+  function handleFile(file){if(!file||!file.type.startsWith('image/')){alert('画像ファイルを選んでください');return;}selectedFile=file;const reader=new FileReader();reader.onload=e=>{document.getElementById('drop-zone').style.display='none';document.getElementById('preview-wrap').style.display='block';document.getElementById('preview-img').src=e.target.result;document.getElementById('preview-name').textContent=file.name;document.getElementById('btn-copy').disabled=false;updatePrompt();};reader.readAsDataURL(file);}
+  document.getElementById('input-camera').addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0]);});
+  document.getElementById('input-library').addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0]);});
+  const dz=document.getElementById('drop-zone');
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});
+  dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
+  dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-over');if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0]);});
+  function updatePrompt(){if(!selectedFile)return;const target=document.getElementById('reg-target').value;const note=document.getElementById('extra-note').value.trim();const targetText={both:'TimeTree（✨悠希&葵✨）と Googleカレンダー（学校行事）の両方',timetree:'TimeTree（✨悠希&葵✨）',google:'Googleカレンダー（学校行事）'}[target];let p='添付の書類写真を読み取って、学校行事をカレンダーに登録してください。\n\n【登録先】'+targetText+'\n【ラベル】コーラル・ピンク（学校行事）\n【ルール】\n・日程・時間・イベント名を正確に読み取る\n・複数日程があればすべて登録する\n・参観日など特記事項はメモに含める';if(note)p+='\n\n【追加メモ】'+note;document.getElementById('prompt-box').textContent=p;}
+  function copyPrompt(){const text=document.getElementById('prompt-box').textContent;(navigator.clipboard?.writeText(text)??Promise.reject()).then(()=>showToast('✅ コピーしました！Coworkに画像と一緒に貼り付けてね 🎉')).catch(()=>{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');showToast('✅ コピーしました！');}catch{showToast('⚠️ 手動でコピーしてください');}document.body.removeChild(ta);});}
+  function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+  function resetAll(){selectedFile=null;['input-camera','input-library'].forEach(id=>document.getElementById(id).value='');document.getElementById('drop-zone').style.display='';document.getElementById('preview-wrap').style.display='none';document.getElementById('preview-img').src='';document.getElementById('prompt-box').textContent='（写真を選ぶと自動生成されます）';document.getElementById('btn-copy').disabled=true;document.getElementById('extra-note').value='';document.getElementById('reg-target').value='both';}
 </script>
 </body>
 </html>
