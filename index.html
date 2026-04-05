@@ -24,6 +24,8 @@
       --shadow:   0 2px 20px rgba(200,80,80,.10);
       --green:    #3DAA6A;
       --green-l:  #E8F8EF;
+      --blue:     #3A7BD5;
+      --blue-l:   #E8F0FE;
     }
 
     body {
@@ -82,7 +84,7 @@
     .card-head h2 { font-size: 14px; font-weight: 700; }
     .card-body { padding: 14px 16px; }
 
-    /* API Key setup banner */
+    /* API Key banner */
     #api-banner {
       background: #FFF8E8;
       border: 1.5px solid #F0C040;
@@ -105,7 +107,6 @@
       border: none; border-radius: 10px; font-size: 13px; font-weight: 700;
       cursor: pointer; flex-shrink: 0;
     }
-    #btn-save-key:active { opacity: .8; }
     .api-saved {
       background: var(--green-l);
       border: 1.5px solid var(--green);
@@ -114,11 +115,6 @@
       margin-bottom: 14px;
       display: flex; align-items: center; justify-content: space-between;
       font-size: 13px; color: #1E5C35; font-weight: 600;
-    }
-    .btn-clear-key {
-      font-size: 11px; color: var(--muted);
-      background: none; border: 1px solid var(--border);
-      padding: 4px 10px; border-radius: 20px; cursor: pointer;
     }
 
     /* Upload area */
@@ -176,27 +172,51 @@
     }
     select:focus, input[type="text"]:focus { border-color: var(--coral); }
 
-    /* Result area */
+    /* Result cards */
     #result-area {
       display: none;
-      background: var(--green-l);
-      border: 1.5px solid var(--green);
-      border-radius: 12px;
-      padding: 14px;
-      font-size: 13px; line-height: 1.8;
-      color: #1E4D30;
-      white-space: pre-wrap; word-break: break-word;
-      min-height: 100px;
     }
     #result-area.loading {
       display: flex; align-items: center; justify-content: center;
-      gap: 10px; color: var(--muted); background: var(--bg);
-      border-color: var(--border); font-size: 14px;
+      gap: 10px; color: var(--muted);
+      font-size: 14px; padding: 20px 0;
     }
     #result-area.error {
       display: block;
-      background: #FFF0F0; border-color: var(--coral); color: var(--coral-d);
+      background: #FFF0F0; border: 1.5px solid var(--coral);
+      border-radius: 12px; padding: 14px;
+      color: var(--coral-d); font-size: 13px;
     }
+
+    .ev-card {
+      background: var(--green-l);
+      border: 1.5px solid var(--green);
+      border-radius: 12px;
+      padding: 13px 14px;
+      margin-bottom: 10px;
+    }
+    .ev-title { font-size: 14px; font-weight: 700; color: #1E4D30; margin-bottom: 5px; }
+    .ev-items { font-size: 13px; color: #2A6040; margin-bottom: 5px; }
+    .ev-note  { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    .ev-btns  { display: flex; flex-direction: column; gap: 7px; }
+
+    .gcal-btn {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 10px 14px; border-radius: 10px;
+      font-size: 13px; font-weight: 600; text-decoration: none;
+      transition: .15s; text-align: center;
+    }
+    .gcal-btn:active { opacity: .8; transform: scale(.97); }
+    .gcal-event { background: var(--blue-l); color: var(--blue); border: 1.5px solid var(--blue); }
+    .gcal-shop  { background: var(--coral-l); color: var(--coral-d); border: 1.5px solid var(--coral); }
+
+    .raw-result {
+      background: var(--green-l); border: 1.5px solid var(--green);
+      border-radius: 12px; padding: 14px;
+      font-size: 13px; line-height: 1.8; color: #1E4D30;
+      white-space: pre-wrap; word-break: break-word;
+    }
+
     .spinner {
       width: 22px; height: 22px;
       border: 3px solid var(--border);
@@ -205,7 +225,6 @@
       animation: spin .8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .result-note { font-size: 11px; color: var(--muted); margin-top: 8px; text-align: center; }
 
     /* Buttons */
     .action-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
@@ -226,7 +245,7 @@
     }
     .btn:disabled { opacity: .4; cursor: default; transform: none; }
 
-    /* iPhone tab */
+    /* Setup tab */
     .step-row { display: flex; gap: 12px; margin-bottom: 10px; align-items: flex-start; }
     .step-num {
       background: var(--coral-l); color: var(--coral-d);
@@ -282,7 +301,6 @@
 <!-- ══ Panel: Main ══ -->
 <div class="panel active" id="panel-main">
 
-  <!-- API Key status -->
   <div id="api-banner">
     <h3>🔑 Claude APIキーを設定してください（初回のみ）</h3>
     <p>「設定」タブからAnthropicのAPIキーを入力すると、写真を直接Claudeに送れます。</p>
@@ -335,14 +353,6 @@
         <span class="setting-value">コーラル・ピンク</span>
       </div>
       <div class="setting-row">
-        <span class="setting-label">登録先</span>
-        <select id="reg-target">
-          <option value="both">TimeTree ＋ Google両方</option>
-          <option value="timetree">TimeTree のみ</option>
-          <option value="google">Googleカレンダーのみ</option>
-        </select>
-      </div>
-      <div class="setting-row">
         <span class="setting-label">追加メモ</span>
         <input type="text" id="extra-note" placeholder="あれば入力…">
       </div>
@@ -351,14 +361,12 @@
 
   <!-- Step 3: Result -->
   <div class="card" id="result-card" style="display:none;">
-    <div class="card-head"><div class="num" style="background:var(--green)">3</div><h2>Claudeの読み取り結果</h2></div>
+    <div class="card-head"><div class="num" style="background:var(--green)">3</div><h2>読み取り結果 &amp; カレンダー登録</h2></div>
     <div class="card-body">
       <div id="result-area"></div>
-      <p class="result-note" id="result-note"></p>
     </div>
   </div>
 
-  <!-- Action buttons -->
   <div class="action-btns">
     <button class="btn btn-primary" id="btn-run" onclick="runClaude()" disabled>
       ▶️ 実行（Claudeに送る）
@@ -375,7 +383,6 @@
 <!-- ══ Panel: Setup ══ -->
 <div class="panel" id="panel-setup">
 
-  <!-- API Key -->
   <div class="card">
     <div class="card-head"><div class="num">🔑</div><h2>Claude APIキー設定</h2></div>
     <div class="card-body">
@@ -390,7 +397,6 @@
     </div>
   </div>
 
-  <!-- Usage instructions -->
   <div class="setup-box">
     <h3>📱 iPhoneでの使い方</h3>
     <div class="step-row">
@@ -406,28 +412,26 @@
     </div>
     <div class="step-row">
       <div class="step-num">3</div>
-      <div class="step-text">
-        「登録する」タブで📷 カメラで書類を撮影する
-      </div>
+      <div class="step-text">📷 カメラで書類を撮影する</div>
     </div>
     <div class="step-row">
       <div class="step-num">4</div>
       <div class="step-text">
-        <strong>▶️ 実行</strong> ボタンを押す → Claudeが自動で読み取り！
+        <strong>▶️ 実行</strong> → 行事カードが表示される
       </div>
     </div>
     <div class="step-row">
       <div class="step-num">5</div>
       <div class="step-text">
-        表示された結果をもとにカレンダーに登録する
-        <div class="sub">将来的には自動登録にも対応予定</div>
+        <strong>📅 Googleカレンダーに追加</strong> ボタンで登録
+        <div class="sub">持ち物がある行事は🛒前週土曜の買い物リストも自動生成！</div>
       </div>
     </div>
   </div>
 
   <div class="tip-box">
     <div class="tip-title">💡 APIキーについて</div>
-    APIキーはお使いのデバイスのブラウザ（localStorage）にのみ保存されます。サーバーには送信されません。Anthropicのコンソールで無料トライアルも利用できます。
+    APIキーはお使いのデバイスのブラウザ（localStorage）にのみ保存されます。サーバーには送信されません。
   </div>
 
 </div>
@@ -435,12 +439,11 @@
 <div id="toast">✅ 完了しました！</div>
 
 <script>
-  // ── Init ──
   const API_KEY_STORAGE = 'claude_api_key_v1';
 
+  // ── Init ──
   function init() {
-    const key = localStorage.getItem(API_KEY_STORAGE);
-    updateKeyStatus(key);
+    updateKeyStatus(localStorage.getItem(API_KEY_STORAGE));
   }
 
   function updateKeyStatus(key) {
@@ -469,7 +472,7 @@
     setTimeout(() => switchTab('main'), 1200);
   }
 
-  // ── Tab switching ──
+  // ── Tabs ──
   function switchTab(name) {
     document.querySelectorAll('.tab').forEach((t, i) => {
       t.classList.toggle('active', (name==='main' && i===0) || (name==='setup' && i===1));
@@ -493,7 +496,6 @@
       document.getElementById('preview-img').src = e.target.result;
       document.getElementById('preview-name').textContent = file.name;
       document.getElementById('btn-run').disabled = false;
-      // Hide previous result
       document.getElementById('result-card').style.display = 'none';
     };
     reader.readAsDataURL(file);
@@ -510,6 +512,95 @@
     if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
   });
 
+  // ── Calendar helpers ──
+  function toYMD(d) {
+    return d.toISOString().slice(0,10).replace(/-/g,'');
+  }
+
+  function prevSaturday(dateStr) {
+    // Returns the Saturday of the previous week (or 7 days before if already Saturday)
+    const d = new Date(dateStr + 'T00:00:00');
+    const day = d.getDay(); // 0=Sun,6=Sat
+    const back = day === 6 ? 7 : (day + 1);
+    d.setDate(d.getDate() - back);
+    return d;
+  }
+
+  function addDays(d, n) {
+    const r = new Date(d); r.setDate(r.getDate() + n); return r;
+  }
+
+  function gcalUrl(title, startDate, endDate, details) {
+    const p = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: title,
+      dates: startDate + '/' + endDate,
+      details: details || ''
+    });
+    return 'https://calendar.google.com/calendar/r/eventedit?' + p.toString();
+  }
+
+  function jpDate(d) {
+    return `${d.getMonth()+1}月${d.getDate()}日（${'日月火水木金土'[d.getDay()]}）`;
+  }
+
+  // ── Render result events ──
+  function renderEvents(events) {
+    const area = document.getElementById('result-area');
+    area.className = '';
+    area.style.display = 'block';
+    area.innerHTML = '';
+
+    events.forEach(ev => {
+      const div = document.createElement('div');
+      div.className = 'ev-card';
+
+      const hasDate = ev.date && ev.date !== '不明' && /^\d{4}-\d{2}-\d{2}$/.test(ev.date);
+      const timeStr = ev.time || '終日';
+      const items = Array.isArray(ev.items) ? ev.items.filter(Boolean) : [];
+
+      div.innerHTML = `
+        <div class="ev-title">📅 ${ev.date || '日付不明'} ${timeStr}　${ev.title || ''}</div>
+        ${items.length ? `<div class="ev-items">🎒 ${items.join('・')}</div>` : ''}
+        ${ev.note ? `<div class="ev-note">📝 ${ev.note}</div>` : ''}
+        <div class="ev-btns"></div>
+      `;
+
+      const btns = div.querySelector('.ev-btns');
+
+      if (hasDate) {
+        const startYMD = ev.date.replace(/-/g,'');
+        const endYMD   = toYMD(addDays(new Date(ev.date + 'T00:00:00'), 1));
+        const details  = items.length ? `持ち物：${items.join('・')}${ev.note ? '\n' + ev.note : ''}` : (ev.note || '');
+
+        const evBtn = document.createElement('a');
+        evBtn.href = gcalUrl(`🏫 ${ev.title}`, startYMD, endYMD, details);
+        evBtn.target = '_blank';
+        evBtn.className = 'gcal-btn gcal-event';
+        evBtn.textContent = '📅 Googleカレンダーに追加';
+        btns.appendChild(evBtn);
+
+        // Shopping reminder on previous Saturday
+        if (items.length) {
+          const sat = prevSaturday(ev.date);
+          const satYMD  = toYMD(sat);
+          const satEnd  = toYMD(addDays(sat, 1));
+          const shopTitle = `🛒 買い物：${items.join('・')}`;
+          const shopDetail = `${ev.date} ${ev.title}の準備`;
+
+          const shopBtn = document.createElement('a');
+          shopBtn.href = gcalUrl(shopTitle, satYMD, satEnd, shopDetail);
+          shopBtn.target = '_blank';
+          shopBtn.className = 'gcal-btn gcal-shop';
+          shopBtn.textContent = `🛒 ${jpDate(sat)}に買い物リスト追加`;
+          btns.appendChild(shopBtn);
+        }
+      }
+
+      area.appendChild(div);
+    });
+  }
+
   // ── Run Claude ──
   async function runClaude() {
     const apiKey = localStorage.getItem(API_KEY_STORAGE);
@@ -518,63 +609,32 @@
       setTimeout(() => switchTab('setup'), 800);
       return;
     }
-    if (!selectedDataUrl) {
-      showToast('⚠️ 写真を選んでください');
-      return;
-    }
+    if (!selectedDataUrl) { showToast('⚠️ 写真を選んでください'); return; }
 
     const btn = document.getElementById('btn-run');
     btn.disabled = true;
 
-    // Show result card with loading
     const resultCard = document.getElementById('result-card');
     const resultArea = document.getElementById('result-area');
-    const resultNote = document.getElementById('result-note');
     resultCard.style.display = 'block';
     resultArea.className = 'loading';
     resultArea.innerHTML = '<div class="spinner"></div> Claudeが書類を読み取り中…';
-    resultNote.textContent = '';
-
-    // Scroll to result
     resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
     try {
-      // Prepare image data
-      const dataUrlParts = selectedDataUrl.split(',');
-      const mimeMatch = dataUrlParts[0].match(/:(.*?);/);
-      const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
-      const base64Data = dataUrlParts[1];
+      const parts = selectedDataUrl.split(',');
+      const mime  = (parts[0].match(/:(.*?);/) || [])[1] || 'image/jpeg';
+      const b64   = parts[1];
+      const note  = document.getElementById('extra-note').value.trim();
 
-      // Build prompt
-      const target = document.getElementById('reg-target').value;
-      const note = document.getElementById('extra-note').value.trim();
-      const targetText = {
-        both:     'TimeTree（✨悠希&葵✨）と Googleカレンダー（学校行事）の両方',
-        timetree: 'TimeTree（✨悠希&葵✨）',
-        google:   'Googleカレンダー（学校行事）'
-      }[target];
+      const prompt = `学校書類の写真からカレンダー登録すべき行事を抽出し、JSONのみ出力してください。
 
-      let prompt = `この学校書類の写真を読み取って、カレンダーに登録すべき行事・予定をすべて抽出してください。
+形式:
+[{"date":"YYYY-MM-DD","title":"行事名","time":"時間または終日","items":["持ち物"],"note":"特記事項"}]
 
-【登録先】${targetText}
-【ラベル】コーラル・ピンク（学校行事）
+ルール: 持ち物なし→items:[] / 日付不明→date:"不明" / 複数行事はすべて含める / JSON以外出力しない${note ? '\n追加メモ: ' + note : ''}`;
 
-【出力形式】
-各予定を以下の形式で列挙してください：
-
-📅 [日付（例：2026年4月15日）] [時間（例：9:00〜12:00、終日 など）]
-🏫 [イベント名]
-📝 [特記事項・持ち物・場所など（あれば）]
-
----（次の予定）---
-
-複数の予定がある場合はすべて列挙してください。
-日付や時間が不明の場合は「要確認」と記載してください。`;
-
-      if (note) prompt += `\n\n【追加メモ】${note}`;
-
-      // Call Claude API
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
           'x-api-key': apiKey,
@@ -584,44 +644,55 @@
         },
         body: JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
-          max_tokens: 1500,
+          max_tokens: 700,
           messages: [{
             role: 'user',
             content: [
-              {
-                type: 'image',
-                source: { type: 'base64', media_type: mimeType, data: base64Data }
-              },
+              { type: 'image', source: { type: 'base64', media_type: mime, data: b64 } },
               { type: 'text', text: prompt }
             ]
           }]
         })
       });
 
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.error?.message || `APIエラー (${response.status})`);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error?.message || `APIエラー (${res.status})`);
       }
 
-      const data = await response.json();
-      const result = data.content?.[0]?.text || '（結果を取得できませんでした）';
+      const data = await res.json();
+      const text = data.content?.[0]?.text || '';
 
-      resultArea.className = '';
-      resultArea.style.display = 'block';
-      resultArea.textContent = result;
-      resultNote.textContent = 'この結果をもとにカレンダーへ登録してください';
-      showToast('✅ 読み取り完了！');
+      // Try to parse JSON
+      const match = text.match(/\[[\s\S]*\]/);
+      if (match) {
+        try {
+          const events = JSON.parse(match[0]);
+          renderEvents(events);
+          showToast(`✅ ${events.length}件の行事を読み取りました！`);
+        } catch {
+          // JSON parse failed — show raw
+          resultArea.className = '';
+          resultArea.style.display = 'block';
+          resultArea.innerHTML = `<div class="raw-result">${text}</div>`;
+          showToast('✅ 読み取り完了！');
+        }
+      } else {
+        resultArea.className = '';
+        resultArea.style.display = 'block';
+        resultArea.innerHTML = `<div class="raw-result">${text}</div>`;
+        showToast('✅ 読み取り完了！');
+      }
 
     } catch (err) {
       resultArea.className = 'error';
       resultArea.style.display = 'block';
-
       if (err.message.includes('401') || err.message.toLowerCase().includes('auth')) {
         resultArea.textContent = '⚠️ APIキーが無効です。設定タブで正しいキーを入力してください。';
-      } else if (err.message.includes('network') || err.message.includes('fetch') || err.message.includes('Failed')) {
+      } else if (err.message.includes('Failed to fetch') || err.message.includes('network')) {
         resultArea.textContent = '⚠️ ネットワークエラーです。インターネット接続を確認してください。';
       } else {
-        resultArea.textContent = '⚠️ エラーが発生しました：\n' + err.message;
+        resultArea.textContent = '⚠️ エラー：' + err.message;
       }
     } finally {
       btn.disabled = !selectedFile;
@@ -638,22 +709,19 @@
 
   // ── Reset ──
   function resetAll() {
-    selectedFile = null;
-    selectedDataUrl = null;
+    selectedFile = null; selectedDataUrl = null;
     ['input-camera','input-library'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('drop-zone').style.display = '';
     document.getElementById('preview-wrap').style.display = 'none';
     document.getElementById('preview-img').src = '';
     document.getElementById('preview-name').textContent = '';
     document.getElementById('result-card').style.display = 'none';
-    document.getElementById('result-area').textContent = '';
+    document.getElementById('result-area').innerHTML = '';
     document.getElementById('result-area').className = '';
     document.getElementById('btn-run').disabled = true;
     document.getElementById('extra-note').value = '';
-    document.getElementById('reg-target').value = 'both';
   }
 
-  // ── Start ──
   init();
 </script>
 </body>
