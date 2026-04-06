@@ -120,8 +120,11 @@
     .ev-btns  { display: flex; flex-direction: column; gap: 6px; }
     .gcal-btn { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 13px; border-radius: 10px; font-size: 13px; font-weight: 600; text-decoration: none; transition: .15s; }
     .gcal-btn:active { opacity: .8; transform: scale(.97); }
-    .gcal-event { background: var(--blue-l); color: var(--blue); border: 1.5px solid var(--blue); }
-    .gcal-shop  { background: var(--coral-l); color: var(--coral-d); border: 1.5px solid var(--coral); }
+    .gcal-event    { background: var(--blue-l); color: var(--blue); border: 1.5px solid var(--blue); }
+    .gcal-shop     { background: var(--coral-l); color: var(--coral-d); border: 1.5px solid var(--coral); }
+    .gcal-timetree { background: #E8FFF0; color: #007700; border: 1.5px solid #00B900; }
+    .tt-all-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; border-radius: 14px; font-size: 14px; font-weight: 700; border: 2px solid #00B900; background: #E8FFF0; color: #007700; cursor: pointer; margin-top: 10px; transition: .2s; }
+    .tt-all-btn:active { transform: scale(.97); }
     .raw-result { background: var(--green-l); border: 1.5px solid var(--green); border-radius: 12px; padding: 13px; font-size: 13px; line-height: 1.8; color: #1E4D30; white-space: pre-wrap; word-break: break-word; }
 
     .spinner { width: 20px; height: 20px; border: 3px solid var(--border); border-top-color: var(--coral); border-radius: 50%; animation: spin .8s linear infinite; }
@@ -241,12 +244,6 @@
 
   <div class="card">
     <div class="card-head"><div class="num">🔑</div><h2>Claude APIキー設定</h2></div>
-    <div class="card-body">
-      <p style="font-size:13px;color:var(--muted);margin-bottom:11px;line-height:1.6;">
-        Anthropicのコンソール（ <strong>console.anthropic.com</strong>）でAPIキーを取得してここに入力してください。キーはこのデバイスのみに保存されます。
-      </p>
-      <div class="api-input-row">
-        <input type="pas"num">🔑</div><h2>Claude APIキー設定</h2></div>
     <div class="card-body">
       <p style="font-size:13px;color:var(--muted);margin-bottom:11px;line-height:1.6;">
         Anthropicのコンソール（<strong>console.anthropic.com</strong>）でAPIキーを発行してここに入力してください。キーはこのデバイスにのみ保存されます。
@@ -496,10 +493,22 @@
   }
   function jpDate(d) { return `${d.getMonth()+1}月${d.getDate()}日（${'日月火水木金土'[d.getDay()]}）`; }
 
+  // ── TimeTree helpers ──
+  const TT_CAL_ID = '95Zg2Xazgxko';
+  function timetreeUrl(date) {
+    return `https://timetreeapp.com/calendars/${TT_CAL_ID}/events/new?date=${date}&referer=app`;
+  }
+  function saveTimetreeQueue(events) {
+    try { localStorage.setItem('timetree_queue', JSON.stringify(events)); } catch(e) {}
+  }
+
   // ── Render events ──
   function renderEvents(events) {
     const area = document.getElementById('result-area');
     area.className = ''; area.style.display = 'block'; area.innerHTML = '';
+    // Store for Cowork/TimeTree automation
+    window.lastExtractedEvents = events;
+    saveTimetreeQueue(events);
     events.forEach(ev => {
       const hasDate = ev.date && ev.date !== '不明' && /^\d{4}-\d{2}-\d{2}$/.test(ev.date);
       const items   = Array.isArray(ev.items) ? ev.items.filter(Boolean) : [];
@@ -529,9 +538,28 @@
           a2.textContent = `🛒 ${jpDate(sat)}に買い物リスト追加`;
           btns.appendChild(a2);
         }
+        // TimeTree button
+        const a3 = document.createElement('a');
+        a3.href = timetreeUrl(ev.date);
+        a3.target = '_blank'; a3.className = 'gcal-btn gcal-timetree';
+        a3.textContent = '🌲 TimeTree（✨悠希&葵✨）に登録';
+        btns.appendChild(a3);
       }
       area.appendChild(div);
     });
+
+    // 全件TimeTree登録ボタン
+    const eventsWithDate = events.filter(e => e.date && e.date !== '不明' && /^\d{4}-\d{2}-\d{2}$/.test(e.date));
+    if (eventsWithDate.length > 0) {
+      const ttBtn = document.createElement('button');
+      ttBtn.className = 'tt-all-btn';
+      ttBtn.innerHTML = `🌲 全${eventsWithDate.length}件をTimeTreeに一括登録`;
+      ttBtn.onclick = () => {
+        saveTimetreeQueue(eventsWithDate);
+        showToast('🌲 Coworkに「TimeTreeに登録して」と話しかけてください！');
+      };
+      area.appendChild(ttBtn);
+    }
   }
 
   // ── Run Claude ──
