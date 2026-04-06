@@ -504,7 +504,7 @@
   // 1件をCowork経由でTimeTree登録
   function registerOneTimetree(ev) {
     saveTimetreeQueue([ev]);
-    showToast('🌲 Coworkに「このイベントをTimeTreeに登録して」と伝えてください！');
+    showToast('🌲 TimeTree登録中… 最大41分で自動完了します！');
   }
 
   // ── Render events ──
@@ -561,7 +561,7 @@
       ttBtn.innerHTML = `🌲 全${eventsWithDate.length}件をTimeTreeに一括登録`;
       ttBtn.onclick = () => {
         saveTimetreeQueue(eventsWithDate);
-        showToast('🌲 Coworkに「TimeTreeに登録して」と話しかけてください！');
+        showToast('🌲 TimeTree一括登録中… 最大41分で自動完了します！');
       };
       area.appendChild(ttBtn);
     }
