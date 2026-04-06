@@ -9,279 +9,146 @@
   <title>📅 学校書類カレンダー登録</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
     :root {
-      --coral:    #F07070;
-      --coral-l:  #FFE8E8;
-      --coral-ll: #FFF2F2;
-      --coral-d:  #D05050;
-      --bg:       #FFF5F5;
-      --card:     #FFFFFF;
-      --text:     #3B2525;
-      --muted:    #A07878;
-      --border:   #EDD8D8;
-      --radius:   18px;
+      --coral:    #F07070; --coral-l:  #FFE8E8; --coral-ll: #FFF2F2; --coral-d:  #D05050;
+      --bg:       #FFF5F5; --card:     #FFFFFF; --text:     #3B2525;
+      --muted:    #A07878; --border:   #EDD8D8; --radius:   18px;
       --shadow:   0 2px 20px rgba(200,80,80,.10);
-      --green:    #3DAA6A;
-      --green-l:  #E8F8EF;
-      --blue:     #3A7BD5;
-      --blue-l:   #E8F0FE;
+      --green:    #3DAA6A; --green-l:  #E8F8EF;
+      --blue:     #3A7BD5; --blue-l:   #E8F0FE;
     }
-
     body {
       font-family: -apple-system, 'Hiragino Sans', sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      background: var(--bg); color: var(--text);
       min-height: 100vh;
       padding-bottom: env(safe-area-inset-bottom, 24px);
     }
-
     header {
       background: linear-gradient(135deg, var(--coral) 0%, var(--coral-d) 100%);
-      color: #fff;
-      padding: 20px 20px calc(24px + env(safe-area-inset-top, 0px));
-      padding-top: calc(16px + env(safe-area-inset-top, 0px));
-      text-align: center;
+      color: #fff; text-align: center;
+      padding: calc(16px + env(safe-area-inset-top,0px)) 20px 24px;
     }
-    header .emoji { font-size: 40px; line-height: 1; }
-    header h1 { font-size: 18px; font-weight: 700; margin-top: 6px; }
-    header p  { font-size: 12px; opacity: .85; margin-top: 3px; }
+    header .emoji { font-size: 38px; line-height: 1; }
+    header h1 { font-size: 17px; font-weight: 700; margin-top: 5px; }
+    header p  { font-size: 12px; opacity: .85; margin-top: 2px; }
 
-    .tabs {
-      display: flex;
-      background: var(--card);
-      border-bottom: 1.5px solid var(--border);
-      position: sticky; top: 0; z-index: 10;
-    }
-    .tab {
-      flex: 1; padding: 13px 6px; text-align: center;
-      font-size: 13px; font-weight: 600; color: var(--muted);
-      cursor: pointer; border-bottom: 3px solid transparent; transition: .15s;
-    }
+    .tabs { display: flex; background: var(--card); border-bottom: 1.5px solid var(--border); position: sticky; top: 0; z-index: 10; }
+    .tab { flex: 1; padding: 12px 6px; text-align: center; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; transition: .15s; }
     .tab.active { color: var(--coral-d); border-bottom-color: var(--coral); }
 
-    .panel { display: none; padding: 16px; }
+    .panel { display: none; padding: 14px; }
     .panel.active { display: block; }
 
-    .card {
-      background: var(--card);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      margin-bottom: 14px;
-    }
-    .card-head {
-      display: flex; align-items: center; gap: 9px;
-      padding: 14px 16px 12px;
-      border-bottom: 1px solid var(--border);
-    }
-    .num {
-      background: var(--coral); color: #fff;
-      width: 24px; height: 24px; border-radius: 50%;
-      font-size: 12px; font-weight: 700;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .card-head h2 { font-size: 14px; font-weight: 700; }
-    .card-body { padding: 14px 16px; }
+    .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 12px; }
+    .card-head { display: flex; align-items: center; gap: 8px; padding: 13px 15px 11px; border-bottom: 1px solid var(--border); }
+    .num { background: var(--coral); color: #fff; width: 22px; height: 22px; border-radius: 50%; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .card-head h2 { font-size: 14px; font-weight: 700; flex: 1; }
+    .card-body { padding: 13px 15px; }
 
-    /* API Key banner */
-    #api-banner {
-      background: #FFF8E8;
-      border: 1.5px solid #F0C040;
-      border-radius: var(--radius);
-      padding: 14px 16px;
-      margin-bottom: 14px;
-    }
-    #api-banner h3 { font-size: 13px; font-weight: 700; color: #7A5C00; margin-bottom: 8px; }
-    #api-banner p  { font-size: 12px; color: #7A5C00; line-height: 1.55; margin-bottom: 10px; }
+    /* API banner */
+    #api-banner { background: #FFF8E8; border: 1.5px solid #F0C040; border-radius: var(--radius); padding: 13px 15px; margin-bottom: 12px; }
+    #api-banner h3 { font-size: 13px; font-weight: 700; color: #7A5C00; margin-bottom: 6px; }
+    #api-banner p  { font-size: 12px; color: #7A5C00; line-height: 1.5; margin-bottom: 9px; }
+    .api-saved { background: var(--green-l); border: 1.5px solid var(--green); border-radius: var(--radius); padding: 9px 15px; margin-bottom: 12px; font-size: 13px; color: #1E5C35; font-weight: 600; }
     .api-input-row { display: flex; gap: 8px; }
-    #api-key-input {
-      flex: 1; font-size: 13px; padding: 9px 12px;
-      border: 1.5px solid #F0C040; border-radius: 10px;
-      outline: none; background: #fff; color: var(--text);
-      font-family: monospace; letter-spacing: .05em;
-    }
+    #api-key-input { flex: 1; font-size: 13px; padding: 8px 11px; border: 1.5px solid #F0C040; border-radius: 10px; outline: none; background: #fff; font-family: monospace; }
     #api-key-input:focus { border-color: var(--coral); }
-    #btn-save-key {
-      padding: 9px 16px; background: var(--coral); color: #fff;
-      border: none; border-radius: 10px; font-size: 13px; font-weight: 700;
-      cursor: pointer; flex-shrink: 0;
-    }
-    .api-saved {
-      background: var(--green-l);
-      border: 1.5px solid var(--green);
-      border-radius: var(--radius);
-      padding: 10px 16px;
-      margin-bottom: 14px;
-      display: flex; align-items: center; justify-content: space-between;
-      font-size: 13px; color: #1E5C35; font-weight: 600;
-    }
+    #btn-save-key { padding: 8px 15px; background: var(--coral); color: #fff; border: none; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; }
 
-    /* Upload area */
-    #drop-zone {
-      border: 2.5px dashed var(--coral);
-      border-radius: 14px; background: var(--coral-ll);
-      text-align: center; padding: 32px 16px;
-      cursor: pointer; transition: .2s; touch-action: manipulation;
-    }
-    #drop-zone.drag-over { background: var(--coral-l); transform: scale(1.01); }
-    #drop-zone .dz-icon { font-size: 48px; }
-    #drop-zone .dz-main { font-size: 15px; font-weight: 700; color: var(--coral-d); margin-top: 8px; }
-    #drop-zone .dz-sub  { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    /* Photo gallery */
+    .gallery-toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .sel-count { font-size: 12px; font-weight: 700; color: var(--coral-d); background: var(--coral-l); padding: 3px 10px; border-radius: 20px; }
+    .btn-sel-all { font-size: 12px; color: var(--muted); background: none; border: 1px solid var(--border); padding: 3px 10px; border-radius: 20px; cursor: pointer; margin-left: auto; }
 
-    .upload-btns { display: flex; gap: 10px; margin-top: 12px; }
-    .upload-btn {
-      flex: 1; padding: 13px 6px; border-radius: 12px;
-      font-size: 14px; font-weight: 600; border: none; cursor: pointer;
-      transition: .15s; text-align: center;
+    #photo-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+      min-height: 80px;
     }
+    .photo-empty { grid-column: 1/-1; text-align: center; color: var(--muted); font-size: 13px; padding: 20px 0; line-height: 1.8; }
+    .photo-empty span { font-size: 12px; }
+    .photo-item {
+      position: relative; border-radius: 10px; overflow: hidden;
+      aspect-ratio: 1; cursor: pointer;
+      border: 2.5px solid transparent; transition: border-color .15s;
+    }
+    .photo-item.selected { border-color: var(--coral); }
+    .photo-thumb { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .photo-check {
+      position: absolute; top: 4px; left: 4px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(255,255,255,.5);
+      border: 2px solid rgba(255,255,255,.8);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: #fff;
+      transition: .15s;
+    }
+    .photo-item.selected .photo-check { background: var(--coral); border-color: var(--coral); }
+    .photo-del {
+      position: absolute; top: 3px; right: 3px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(0,0,0,.45); color: #fff;
+      border: none; cursor: pointer; font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      line-height: 1;
+    }
+    .photo-name { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,.4); color: #fff; font-size: 9px; padding: 2px 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .gallery-btns { display: flex; gap: 8px; margin-top: 10px; }
+    .upload-btn { flex: 1; padding: 12px 6px; border-radius: 12px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; text-align: center; transition: .15s; }
     .upload-btn:active { transform: scale(.96); }
     .btn-camera  { background: var(--coral); color: #fff; }
     .btn-library { background: var(--coral-l); color: var(--coral-d); border: 1.5px solid var(--coral); }
-    #input-camera, #input-library { display: none; }
-
-    #preview-wrap { display: none; }
-    #preview-img {
-      width: 100%; max-height: 240px; object-fit: contain;
-      border-radius: 12px; border: 1.5px solid var(--border); background: #fafafa;
-    }
-    .preview-bar {
-      display: flex; align-items: center; justify-content: space-between; margin-top: 8px;
-    }
-    .preview-name { font-size: 12px; color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .btn-reselect {
-      font-size: 12px; color: var(--coral-d); background: var(--coral-l);
-      border: 1px solid var(--coral); padding: 5px 12px; border-radius: 20px;
-      cursor: pointer; flex-shrink: 0; margin-left: 8px;
-    }
+    #input-camera, #input-photos { display: none; }
 
     /* Settings */
-    .setting-row {
-      display: flex; align-items: center; gap: 10px;
-      padding: 11px 0; border-bottom: 1px solid var(--border);
-    }
+    .setting-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
     .setting-row:last-child { border-bottom: none; }
-    .setting-label { font-size: 12px; color: var(--muted); width: 72px; flex-shrink: 0; }
+    .setting-label { font-size: 12px; color: var(--muted); width: 68px; flex-shrink: 0; }
     .setting-value { font-size: 14px; font-weight: 600; flex: 1; }
-    .dot { width: 13px; height: 13px; border-radius: 50%; background: #F07070; flex-shrink: 0; }
-    select, input[type="text"] {
-      font-size: 14px; font-weight: 600;
-      border: 1.5px solid var(--border); border-radius: 10px;
-      padding: 7px 10px; color: var(--text); background: #fff;
-      outline: none; flex: 1; width: 100%; -webkit-appearance: none;
-    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; background: #F07070; flex-shrink: 0; }
+    select, input[type="text"] { font-size: 13px; font-weight: 600; border: 1.5px solid var(--border); border-radius: 10px; padding: 7px 10px; color: var(--text); background: #fff; outline: none; flex: 1; width: 100%; -webkit-appearance: none; }
     select:focus, input[type="text"]:focus { border-color: var(--coral); }
 
     /* Result cards */
-    #result-area {
-      display: none;
-    }
-    #result-area.loading {
-      display: flex; align-items: center; justify-content: center;
-      gap: 10px; color: var(--muted);
-      font-size: 14px; padding: 20px 0;
-    }
-    #result-area.error {
-      display: block;
-      background: #FFF0F0; border: 1.5px solid var(--coral);
-      border-radius: 12px; padding: 14px;
-      color: var(--coral-d); font-size: 13px;
-    }
-
-    .ev-card {
-      background: var(--green-l);
-      border: 1.5px solid var(--green);
-      border-radius: 12px;
-      padding: 13px 14px;
-      margin-bottom: 10px;
-    }
-    .ev-title { font-size: 14px; font-weight: 700; color: #1E4D30; margin-bottom: 5px; }
-    .ev-items { font-size: 13px; color: #2A6040; margin-bottom: 5px; }
-    .ev-note  { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
-    .ev-btns  { display: flex; flex-direction: column; gap: 7px; }
-
-    .gcal-btn {
-      display: flex; align-items: center; justify-content: center; gap: 6px;
-      padding: 10px 14px; border-radius: 10px;
-      font-size: 13px; font-weight: 600; text-decoration: none;
-      transition: .15s; text-align: center;
-    }
+    #result-area { display: none; }
+    #result-area.loading { display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--muted); font-size: 14px; padding: 20px 0; }
+    #result-area.error { display: block; background: #FFF0F0; border: 1.5px solid var(--coral); border-radius: 12px; padding: 13px; color: var(--coral-d); font-size: 13px; }
+    .ev-card { background: var(--green-l); border: 1.5px solid var(--green); border-radius: 12px; padding: 12px 13px; margin-bottom: 9px; }
+    .ev-title { font-size: 14px; font-weight: 700; color: #1E4D30; margin-bottom: 4px; }
+    .ev-items { font-size: 13px; color: #2A6040; margin-bottom: 4px; }
+    .ev-note  { font-size: 12px; color: var(--muted); margin-bottom: 7px; }
+    .ev-btns  { display: flex; flex-direction: column; gap: 6px; }
+    .gcal-btn { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 13px; border-radius: 10px; font-size: 13px; font-weight: 600; text-decoration: none; transition: .15s; }
     .gcal-btn:active { opacity: .8; transform: scale(.97); }
     .gcal-event { background: var(--blue-l); color: var(--blue); border: 1.5px solid var(--blue); }
     .gcal-shop  { background: var(--coral-l); color: var(--coral-d); border: 1.5px solid var(--coral); }
+    .raw-result { background: var(--green-l); border: 1.5px solid var(--green); border-radius: 12px; padding: 13px; font-size: 13px; line-height: 1.8; color: #1E4D30; white-space: pre-wrap; word-break: break-word; }
 
-    .raw-result {
-      background: var(--green-l); border: 1.5px solid var(--green);
-      border-radius: 12px; padding: 14px;
-      font-size: 13px; line-height: 1.8; color: #1E4D30;
-      white-space: pre-wrap; word-break: break-word;
-    }
-
-    .spinner {
-      width: 22px; height: 22px;
-      border: 3px solid var(--border);
-      border-top-color: var(--coral);
-      border-radius: 50%;
-      animation: spin .8s linear infinite;
-    }
+    .spinner { width: 20px; height: 20px; border: 3px solid var(--border); border-top-color: var(--coral); border-radius: 50%; animation: spin .8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* Buttons */
-    .action-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
-    .btn {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      width: 100%; padding: 16px; border-radius: 14px;
-      font-size: 16px; font-weight: 700;
-      border: none; cursor: pointer;
-      transition: .2s; letter-spacing: .02em; -webkit-appearance: none;
-    }
+    .action-btns { display: flex; flex-direction: column; gap: 9px; margin-top: 4px; }
+    .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 15px; border-radius: 14px; font-size: 15px; font-weight: 700; border: none; cursor: pointer; transition: .2s; -webkit-appearance: none; }
     .btn:active { transform: scale(.97); }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--coral) 0%, var(--coral-d) 100%);
-      color: #fff; box-shadow: 0 4px 16px rgba(200,80,80,.3);
-    }
-    .btn-outline {
-      background: #fff; color: var(--coral-d); border: 2px solid var(--coral);
-    }
+    .btn-primary { background: linear-gradient(135deg, var(--coral) 0%, var(--coral-d) 100%); color: #fff; box-shadow: 0 4px 14px rgba(200,80,80,.3); }
+    .btn-outline  { background: #fff; color: var(--coral-d); border: 2px solid var(--coral); }
     .btn:disabled { opacity: .4; cursor: default; transform: none; }
 
     /* Setup tab */
-    .step-row { display: flex; gap: 12px; margin-bottom: 10px; align-items: flex-start; }
-    .step-num {
-      background: var(--coral-l); color: var(--coral-d);
-      font-size: 12px; font-weight: 700;
-      width: 26px; height: 26px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .step-text { font-size: 14px; line-height: 1.55; padding-top: 3px; }
+    .step-row { display: flex; gap: 11px; margin-bottom: 9px; align-items: flex-start; }
+    .step-num { background: var(--coral-l); color: var(--coral-d); font-size: 11px; font-weight: 700; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .step-text { font-size: 14px; line-height: 1.5; padding-top: 2px; }
     .step-text strong { color: var(--coral-d); }
     .step-text .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
-    .setup-box {
-      background: var(--coral-ll); border: 1.5px solid var(--coral);
-      border-radius: 12px; padding: 14px; margin-bottom: 14px;
-    }
-    .setup-box h3 { font-size: 14px; font-weight: 700; color: var(--coral-d); margin-bottom: 10px; }
-    .tip-box {
-      background: #FFF8E8; border: 1.5px solid #F0D890;
-      border-radius: 12px; padding: 13px 14px;
-      font-size: 13px; line-height: 1.6; color: #5A4A10;
-    }
+    .setup-box { background: var(--coral-ll); border: 1.5px solid var(--coral); border-radius: 12px; padding: 13px; margin-bottom: 12px; }
+    .setup-box h3 { font-size: 14px; font-weight: 700; color: var(--coral-d); margin-bottom: 9px; }
+    .tip-box { background: #FFF8E8; border: 1.5px solid #F0D890; border-radius: 12px; padding: 12px 13px; font-size: 13px; line-height: 1.6; color: #5A4A10; }
     .tip-box .tip-title { font-weight: 700; margin-bottom: 4px; }
 
     /* Toast */
-    #toast {
-      position: fixed;
-      bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-      left: 50%; transform: translateX(-50%) translateY(100px);
-      background: #2D1A1A; color: #fff;
-      padding: 13px 22px; border-radius: 30px;
-      font-size: 14px; font-weight: 600;
-      transition: transform .3s ease;
-      z-index: 999; white-space: nowrap;
-      box-shadow: 0 4px 20px rgba(0,0,0,.25);
-    }
+    #toast { position: fixed; bottom: calc(20px + env(safe-area-inset-bottom,0px)); left: 50%; transform: translateX(-50%) translateY(100px); background: #2D1A1A; color: #fff; padding: 12px 20px; border-radius: 28px; font-size: 13px; font-weight: 600; transition: transform .3s ease; z-index: 999; white-space: nowrap; box-shadow: 0 4px 20px rgba(0,0,0,.25); }
     #toast.show { transform: translateX(-50%) translateY(0); }
-
     .footer { text-align: center; font-size: 11px; color: var(--muted); padding: 4px 0 12px; }
   </style>
 </head>
@@ -290,7 +157,7 @@
 <header>
   <div class="emoji">📅</div>
   <h1>学校書類 → カレンダー自動登録</h1>
-  <p>写真を撮って実行するだけ ✨</p>
+  <p>写真を保存して実行するだけ ✨</p>
 </header>
 
 <div class="tabs">
@@ -304,42 +171,34 @@
   <div id="api-banner">
     <h3>🔑 Claude APIキーを設定してください（初回のみ）</h3>
     <p>「設定」タブからAnthropicのAPIキーを入力すると、写真を直接Claudeに送れます。</p>
-    <button class="btn btn-outline" style="margin-top:4px;padding:10px;" onclick="switchTab('setup')">⚙️ 設定タブへ</button>
+    <button class="btn btn-outline" style="margin-top:4px;padding:9px;" onclick="switchTab('setup')">⚙️ 設定タブへ</button>
   </div>
-  <div id="api-saved-banner" class="api-saved" style="display:none;">
-    ✅ APIキー設定済み — すぐに使えます
-  </div>
+  <div id="api-saved-banner" class="api-saved" style="display:none;">✅ APIキー設定済み — すぐに使えます</div>
 
-  <!-- Step 1 -->
+  <!-- Step 1: Photo Gallery -->
   <div class="card">
-    <div class="card-head"><div class="num">1</div><h2>書類の写真を選ぶ</h2></div>
+    <div class="card-head">
+      <div class="num">1</div>
+      <h2>書類の写真を管理</h2>
+    </div>
     <div class="card-body">
-      <div id="drop-zone" onclick="document.getElementById('input-library').click()">
-        <div class="dz-icon">📄</div>
-        <div class="dz-main">ここをタップ / 写真をドロップ</div>
-        <div class="dz-sub">JPEG・PNG・HEIC など対応</div>
+      <div class="gallery-toolbar">
+        <span id="sel-count" class="sel-count" style="display:none"></span>
+        <button class="btn-sel-all" id="btn-sel-all" onclick="toggleSelectAll()">全選択</button>
       </div>
-      <div class="upload-btns">
-        <button class="upload-btn btn-camera" onclick="document.getElementById('input-camera').click()">
-          📷 カメラで撮影
-        </button>
-        <button class="upload-btn btn-library" onclick="document.getElementById('input-library').click()">
-          🖼 ライブラリから選ぶ
-        </button>
+      <div id="photo-grid">
+        <div class="photo-empty">📂 まだ写真がありません<br><span>下のボタンで追加してください</span></div>
       </div>
-      <input type="file" id="input-camera"  accept="image/*" capture="environment">
-      <input type="file" id="input-library" accept="image/*">
-      <div id="preview-wrap">
-        <img id="preview-img" src="" alt="プレビュー">
-        <div class="preview-bar">
-          <span class="preview-name" id="preview-name"></span>
-          <span class="btn-reselect" onclick="document.getElementById('input-library').click()">✏️ 選び直す</span>
-        </div>
+      <div class="gallery-btns">
+        <button class="upload-btn btn-camera" onclick="document.getElementById('input-camera').click()">📷 撮影</button>
+        <button class="upload-btn btn-library" onclick="document.getElementById('input-photos').click()">🖼 追加（複数可）</button>
       </div>
+      <input type="file" id="input-camera"  accept="image/*" capture="environment" multiple>
+      <input type="file" id="input-photos" accept="image/*" multiple>
     </div>
   </div>
 
-  <!-- Step 2 -->
+  <!-- Step 2: Settings -->
   <div class="card">
     <div class="card-head"><div class="num">2</div><h2>カレンダー設定を確認</h2></div>
     <div class="card-body">
@@ -369,16 +228,13 @@
 
   <div class="action-btns">
     <button class="btn btn-primary" id="btn-run" onclick="runClaude()" disabled>
-      ▶️ 実行（Claudeに送る）
+      ▶️ 実行（選択した写真をClaudeに送る）
     </button>
-    <button class="btn btn-outline" onclick="resetAll()">
-      🔄 リセット
-    </button>
+    <button class="btn btn-outline" onclick="resetResults()">🔄 結果をリセット</button>
   </div>
 
-  <div class="footer">by Claude（Cowork） · 書類の内容はClaudeが自動で読み取ります</div>
+  <div class="footer">by Claude（Cowork） · 保存した書類はこのデバイスに残ります</div>
 </div>
-
 
 <!-- ══ Panel: Setup ══ -->
 <div class="panel" id="panel-setup">
@@ -386,14 +242,20 @@
   <div class="card">
     <div class="card-head"><div class="num">🔑</div><h2>Claude APIキー設定</h2></div>
     <div class="card-body">
-      <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.6;">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:11px;line-height:1.6;">
+        Anthropicのコンソール（ <strong>console.anthropic.com</strong>）でAPIキーを取得してここに入力してください。キーはこのデバイスのみに保存されます。
+      </p>
+      <div class="api-input-row">
+        <input type="pas"num">🔑</div><h2>Claude APIキー設定</h2></div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:11px;line-height:1.6;">
         Anthropicのコンソール（<strong>console.anthropic.com</strong>）でAPIキーを発行してここに入力してください。キーはこのデバイスにのみ保存されます。
       </p>
       <div class="api-input-row">
         <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off" autocorrect="off" spellcheck="false">
         <button id="btn-save-key" onclick="saveApiKey()">保存</button>
       </div>
-      <div id="key-status" style="margin-top:10px;font-size:12px;color:var(--muted);"></div>
+      <div id="key-status" style="margin-top:9px;font-size:12px;color:var(--muted);"></div>
     </div>
   </div>
 
@@ -402,7 +264,7 @@
     <div class="step-row">
       <div class="step-num">1</div>
       <div class="step-text">
-        このURL（<strong>yumegadisney-prog.github.io/school-calendar-app</strong>）をSafariで開く
+        SafariでこのURLを開く
         <div class="sub">ホーム画面に追加するとアプリみたいに使えます</div>
       </div>
     </div>
@@ -412,12 +274,15 @@
     </div>
     <div class="step-row">
       <div class="step-num">3</div>
-      <div class="step-text">📷 カメラで書類を撮影する</div>
+      <div class="step-text">
+        📷 書類を撮影 / 🖼 ライブラリから複数追加
+        <div class="sub">写真はこのアプリに保存されます</div>
+      </div>
     </div>
     <div class="step-row">
       <div class="step-num">4</div>
       <div class="step-text">
-        <strong>▶️ 実行</strong> → 行事カードが表示される
+        送りたい写真をタップして選択 → <strong>▶️ 実行</strong>
       </div>
     </div>
     <div class="step-row">
@@ -430,187 +295,252 @@
   </div>
 
   <div class="tip-box">
-    <div class="tip-title">💡 APIキーについて</div>
-    APIキーはお使いのデバイスのブラウザ（localStorage）にのみ保存されます。サーバーには送信されません。
+    <div class="tip-title">💡 データの保存について</div>
+    写真・APIキーはすべてこのデバイスのブラウザ（IndexedDB / localStorage）に保存されます。サーバーには送信されません。
   </div>
 
 </div>
 
-<div id="toast">✅ 完了しました！</div>
+<div id="toast"></div>
 
 <script>
-  const API_KEY_STORAGE = 'claude_api_key_v1';
+  // ── IndexedDB ──
+  const DB_NAME  = 'schoolCalDB_v1';
+  const DB_STORE = 'photos';
+  let _db = null;
 
-  // ── Init ──
-  function init() {
-    updateKeyStatus(localStorage.getItem(API_KEY_STORAGE));
-  }
-
-  function updateKeyStatus(key) {
-    const banner = document.getElementById('api-banner');
-    const saved  = document.getElementById('api-saved-banner');
-    const status = document.getElementById('key-status');
-    if (key) {
-      banner.style.display = 'none';
-      saved.style.display = 'flex';
-      if (status) status.textContent = '✅ APIキーが保存されています（sk-ant-***' + key.slice(-4) + '）';
-    } else {
-      banner.style.display = 'block';
-      saved.style.display = 'none';
-      if (status) status.textContent = '';
-    }
-  }
-
-  function saveApiKey() {
-    const val = document.getElementById('api-key-input').value.trim();
-    if (!val) { showToast('⚠️ APIキーを入力してください'); return; }
-    if (!val.startsWith('sk-')) { showToast('⚠️ 正しいAPIキーを入力してください（sk- で始まります）'); return; }
-    localStorage.setItem(API_KEY_STORAGE, val);
-    document.getElementById('api-key-input').value = '';
-    updateKeyStatus(val);
-    showToast('✅ APIキーを保存しました！');
-    setTimeout(() => switchTab('main'), 1200);
-  }
-
-  // ── Tabs ──
-  function switchTab(name) {
-    document.querySelectorAll('.tab').forEach((t, i) => {
-      t.classList.toggle('active', (name==='main' && i===0) || (name==='setup' && i===1));
+  async function getDB() {
+    if (_db) return _db;
+    return new Promise((res, rej) => {
+      const req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(DB_STORE))
+          db.createObjectStore(DB_STORE, { keyPath: 'id', autoIncrement: true });
+      };
+      req.onsuccess = e => { _db = e.target.result; res(_db); };
+      req.onerror   = e => rej(e.target.error);
     });
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('panel-' + name).classList.add('active');
+  }
+
+  async function dbAdd(name, dataUrl) {
+    const db = await getDB();
+    return new Promise((res, rej) => {
+      const tx  = db.transaction(DB_STORE, 'readwrite');
+      const req = tx.objectStore(DB_STORE).add({ name, dataUrl, savedAt: Date.now() });
+      req.onsuccess = () => res(req.result);
+      tx.onerror = e => rej(e.target.error);
+    });
+  }
+
+  async function dbGetAll() {
+    const db = await getDB();
+    return new Promise((res, rej) => {
+      const req = db.transaction(DB_STORE, 'readonly').objectStore(DB_STORE).getAll();
+      req.onsuccess = () => res(req.result);
+      req.onerror   = e => rej(e.target.error);
+    });
+  }
+
+  async function dbDelete(id) {
+    const db = await getDB();
+    return new Promise((res, rej) => {
+      const tx = db.transaction(DB_STORE, 'readwrite');
+      tx.objectStore(DB_STORE).delete(id).onsuccess = res;
+      tx.onerror = e => rej(e.target.error);
+    });
+  }
+
+  // ── Photo State ──
+  let allPhotos    = [];
+  let selectedIds  = new Set();
+  let allSelected  = false;
+
+  async function loadPhotos() {
+    allPhotos = await dbGetAll();
+    renderGallery();
+  }
+
+  function renderGallery() {
+    const grid    = document.getElementById('photo-grid');
+    const selSpan = document.getElementById('sel-count');
+    const selBtn  = document.getElementById('btn-sel-all');
+
+    if (!allPhotos.length) {
+      grid.innerHTML = '<div class="photo-empty">📂 まだ写真がありません<br><span>下のボタンで追加してください</span></div>';
+      selSpan.style.display = 'none';
+      selBtn.style.display  = 'none';
+      document.getElementById('btn-run').disabled = true;
+      return;
+    }
+
+    selBtn.style.display = 'inline';
+    const cnt = selectedIds.size;
+    if (cnt > 0) {
+      selSpan.textContent  = `${cnt}枚選択中`;
+      selSpan.style.display = 'inline';
+    } else {
+      selSpan.style.display = 'none';
+    }
+    selBtn.textContent = (cnt === allPhotos.length) ? '全解除' : '全選択';
+    document.getElementById('btn-run').disabled = cnt === 0;
+
+    grid.innerHTML = '';
+    allPhotos.forEach(photo => {
+      const sel = selectedIds.has(photo.id);
+      const div = document.createElement('div');
+      div.className = 'photo-item' + (sel ? ' selected' : '');
+
+      const img  = document.createElement('img');
+      img.src    = photo.dataUrl;
+      img.className = 'photo-thumb';
+      img.alt    = photo.name;
+
+      const chk  = document.createElement('div');
+      chk.className = 'photo-check';
+      chk.textContent = sel ? '✓' : '';
+
+      const del  = document.createElement('button');
+      del.className = 'photo-del';
+      del.textContent = '✕';
+      del.setAttribute('aria-label', '削除');
+
+      const nm   = document.createElement('div');
+      nm.className = 'photo-name';
+      nm.textContent = photo.name.replace(/\.[^.]+$/, '').slice(0, 18);
+
+      div.append(img, chk, del, nm);
+
+      div.addEventListener('click', () => toggleSelect(photo.id));
+      del.addEventListener('click', e => { e.stopPropagation(); doDelete(photo.id); });
+
+      grid.appendChild(div);
+    });
+  }
+
+  function toggleSelect(id) {
+    if (selectedIds.has(id)) selectedIds.delete(id);
+    else selectedIds.add(id);
+    renderGallery();
+  }
+
+  function toggleSelectAll() {
+    if (selectedIds.size === allPhotos.length) {
+      selectedIds.clear();
+    } else {
+      allPhotos.forEach(p => selectedIds.add(p.id));
+    }
+    renderGallery();
+  }
+
+  async function doDelete(id) {
+    await dbDelete(id);
+    selectedIds.delete(id);
+    await loadPhotos();
+    showToast('🗑 削除しました');
+  }
+
+  // ── Image resize (save tokens) ──
+  async function resizeImage(dataUrl, maxPx = 1024) {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        const { width: w, height: h } = img;
+        if (w <= maxPx && h <= maxPx) { resolve(dataUrl); return; }
+        const s = maxPx / Math.max(w, h);
+        const c = document.createElement('canvas');
+        c.width = Math.round(w * s); c.height = Math.round(h * s);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        resolve(c.toDataURL('image/jpeg', 0.85));
+      };
+      img.src = dataUrl;
+    });
   }
 
   // ── File handling ──
-  let selectedFile = null;
-  let selectedDataUrl = null;
-
-  function handleFile(file) {
-    if (!file || !file.type.startsWith('image/')) { alert('画像ファイルを選んでください'); return; }
-    selectedFile = file;
-    const reader = new FileReader();
-    reader.onload = e => {
-      selectedDataUrl = e.target.result;
-      document.getElementById('drop-zone').style.display = 'none';
-      document.getElementById('preview-wrap').style.display = 'block';
-      document.getElementById('preview-img').src = e.target.result;
-      document.getElementById('preview-name').textContent = file.name;
-      document.getElementById('btn-run').disabled = false;
-      document.getElementById('result-card').style.display = 'none';
-    };
-    reader.readAsDataURL(file);
+  async function handleFiles(files) {
+    const imgs = [...files].filter(f => f.type.startsWith('image/'));
+    if (!imgs.length) return;
+    showToast(`⏳ ${imgs.length}枚を保存中…`);
+    for (const file of imgs) {
+      const dataUrl = await new Promise(res => {
+        const r = new FileReader();
+        r.onload = e => res(e.target.result);
+        r.readAsDataURL(file);
+      });
+      const resized = await resizeImage(dataUrl);
+      await dbAdd(file.name, resized);
+    }
+    await loadPhotos();
+    showToast(`✅ ${imgs.length}枚を保存しました！`);
+    // auto-select newly added
+    const newPhotos = allPhotos.slice(-imgs.length);
+    newPhotos.forEach(p => selectedIds.add(p.id));
+    renderGallery();
   }
 
-  document.getElementById('input-camera').addEventListener('change', e => { if(e.target.files[0]) handleFile(e.target.files[0]); });
-  document.getElementById('input-library').addEventListener('change', e => { if(e.target.files[0]) handleFile(e.target.files[0]); });
-
-  const dz = document.getElementById('drop-zone');
-  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
-  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
-  dz.addEventListener('drop', e => {
-    e.preventDefault(); dz.classList.remove('drag-over');
-    if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
-  });
+  document.getElementById('input-camera').addEventListener('change', e => { handleFiles(e.target.files); e.target.value=''; });
+  document.getElementById('input-photos').addEventListener('change', e => { handleFiles(e.target.files); e.target.value=''; });
 
   // ── Calendar helpers ──
-  function toYMD(d) {
-    return d.toISOString().slice(0,10).replace(/-/g,'');
-  }
-
+  function toYMD(d) { return d.toISOString().slice(0,10).replace(/-/g,''); }
+  function addDays(d, n) { const r = new Date(d); r.setDate(r.getDate()+n); return r; }
   function prevSaturday(dateStr) {
-    // Returns the Saturday of the previous week (or 7 days before if already Saturday)
     const d = new Date(dateStr + 'T00:00:00');
-    const day = d.getDay(); // 0=Sun,6=Sat
-    const back = day === 6 ? 7 : (day + 1);
-    d.setDate(d.getDate() - back);
-    return d;
+    const back = d.getDay() === 6 ? 7 : (d.getDay()+1);
+    d.setDate(d.getDate()-back); return d;
   }
-
-  function addDays(d, n) {
-    const r = new Date(d); r.setDate(r.getDate() + n); return r;
+  function gcalUrl(title, start, end, details) {
+    return 'https://calendar.google.com/calendar/r/eventedit?' +
+      new URLSearchParams({ action:'TEMPLATE', text:title, dates:start+'/'+end, details:details||'' });
   }
+  function jpDate(d) { return `${d.getMonth()+1}月${d.getDate()}日（${'日月火水木金土'[d.getDay()]}）`; }
 
-  function gcalUrl(title, startDate, endDate, details) {
-    const p = new URLSearchParams({
-      action: 'TEMPLATE',
-      text: title,
-      dates: startDate + '/' + endDate,
-      details: details || ''
-    });
-    return 'https://calendar.google.com/calendar/r/eventedit?' + p.toString();
-  }
-
-  function jpDate(d) {
-    return `${d.getMonth()+1}月${d.getDate()}日（${'日月火水木金土'[d.getDay()]}）`;
-  }
-
-  // ── Render result events ──
+  // ── Render events ──
   function renderEvents(events) {
     const area = document.getElementById('result-area');
-    area.className = '';
-    area.style.display = 'block';
-    area.innerHTML = '';
-
+    area.className = ''; area.style.display = 'block'; area.innerHTML = '';
     events.forEach(ev => {
+      const hasDate = ev.date && ev.date !== '不明' && /^\d{4}-\d{2}-\d{2}$/.test(ev.date);
+      const items   = Array.isArray(ev.items) ? ev.items.filter(Boolean) : [];
       const div = document.createElement('div');
       div.className = 'ev-card';
-
-      const hasDate = ev.date && ev.date !== '不明' && /^\d{4}-\d{2}-\d{2}$/.test(ev.date);
-      const timeStr = ev.time || '終日';
-      const items = Array.isArray(ev.items) ? ev.items.filter(Boolean) : [];
-
       div.innerHTML = `
-        <div class="ev-title">📅 ${ev.date || '日付不明'} ${timeStr}　${ev.title || ''}</div>
+        <div class="ev-title">📅 ${ev.date||'日付不明'} ${ev.time||'終日'}　${ev.title||''}</div>
         ${items.length ? `<div class="ev-items">🎒 ${items.join('・')}</div>` : ''}
-        ${ev.note ? `<div class="ev-note">📝 ${ev.note}</div>` : ''}
-        <div class="ev-btns"></div>
-      `;
-
+        ${ev.note  ? `<div class="ev-note">📝 ${ev.note}</div>` : ''}
+        <div class="ev-btns"></div>`;
       const btns = div.querySelector('.ev-btns');
-
       if (hasDate) {
-        const startYMD = ev.date.replace(/-/g,'');
-        const endYMD   = toYMD(addDays(new Date(ev.date + 'T00:00:00'), 1));
-        const details  = items.length ? `持ち物：${items.join('・')}${ev.note ? '\n' + ev.note : ''}` : (ev.note || '');
-
-        const evBtn = document.createElement('a');
-        evBtn.href = gcalUrl(`🏫 ${ev.title}`, startYMD, endYMD, details);
-        evBtn.target = '_blank';
-        evBtn.className = 'gcal-btn gcal-event';
-        evBtn.textContent = '📅 Googleカレンダーに追加';
-        btns.appendChild(evBtn);
-
-        // Shopping reminder on previous Saturday
+        const sYMD = ev.date.replace(/-/g,'');
+        const eYMD = toYMD(addDays(new Date(ev.date+'T00:00:00'),1));
+        const det  = items.length ? `持ち物：${items.join('・')}${ev.note?'\n'+ev.note:''}` : (ev.note||'');
+        const a1   = document.createElement('a');
+        a1.href = gcalUrl(`🏫 ${ev.title}`, sYMD, eYMD, det);
+        a1.target = '_blank'; a1.className = 'gcal-btn gcal-event';
+        a1.textContent = '📅 Googleカレンダーに追加';
+        btns.appendChild(a1);
         if (items.length) {
-          const sat = prevSaturday(ev.date);
-          const satYMD  = toYMD(sat);
-          const satEnd  = toYMD(addDays(sat, 1));
-          const shopTitle = `🛒 買い物：${items.join('・')}`;
-          const shopDetail = `${ev.date} ${ev.title}の準備`;
-
-          const shopBtn = document.createElement('a');
-          shopBtn.href = gcalUrl(shopTitle, satYMD, satEnd, shopDetail);
-          shopBtn.target = '_blank';
-          shopBtn.className = 'gcal-btn gcal-shop';
-          shopBtn.textContent = `🛒 ${jpDate(sat)}に買い物リスト追加`;
-          btns.appendChild(shopBtn);
+          const sat  = prevSaturday(ev.date);
+          const sS   = toYMD(sat), eS = toYMD(addDays(sat,1));
+          const a2   = document.createElement('a');
+          a2.href = gcalUrl(`🛒 買い物：${items.join('・')}`, sS, eS, `${ev.date} ${ev.title}の準備`);
+          a2.target = '_blank'; a2.className = 'gcal-btn gcal-shop';
+          a2.textContent = `🛒 ${jpDate(sat)}に買い物リスト追加`;
+          btns.appendChild(a2);
         }
       }
-
       area.appendChild(div);
     });
   }
 
   // ── Run Claude ──
   async function runClaude() {
-    const apiKey = localStorage.getItem(API_KEY_STORAGE);
-    if (!apiKey) {
-      showToast('⚠️ 先に設定タブでAPIキーを入力してください');
-      setTimeout(() => switchTab('setup'), 800);
-      return;
-    }
-    if (!selectedDataUrl) { showToast('⚠️ 写真を選んでください'); return; }
+    const apiKey = localStorage.getItem('claude_api_key_v1');
+    if (!apiKey) { showToast('⚠️ 先に設定タブでAPIキーを入力してください'); setTimeout(()=>switchTab('setup'),800); return; }
+    if (!selectedIds.size) { showToast('⚠️ 写真を選んでください'); return; }
 
+    const selected = allPhotos.filter(p => selectedIds.has(p.id));
     const btn = document.getElementById('btn-run');
     btn.disabled = true;
 
@@ -618,21 +548,23 @@
     const resultArea = document.getElementById('result-area');
     resultCard.style.display = 'block';
     resultArea.className = 'loading';
-    resultArea.innerHTML = '<div class="spinner"></div> Claudeが書類を読み取り中…';
-    resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    resultArea.innerHTML = `<div class="spinner"></div> ${selected.length}枚の書類を読み取り中…`;
+    resultCard.scrollIntoView({ behavior:'smooth', block:'nearest' });
 
     try {
-      const parts = selectedDataUrl.split(',');
-      const mime  = (parts[0].match(/:(.*?);/) || [])[1] || 'image/jpeg';
-      const b64   = parts[1];
-      const note  = document.getElementById('extra-note').value.trim();
+      const imageContents = selected.map(p => {
+        const parts = p.dataUrl.split(',');
+        const mime  = (parts[0].match(/:(.*?);/)||[])[1] || 'image/jpeg';
+        return { type:'image', source:{ type:'base64', media_type:mime, data:parts[1] } };
+      });
 
-      const prompt = `学校書類の写真からカレンダー登録すべき行事を抽出し、JSONのみ出力してください。
+      const note   = document.getElementById('extra-note').value.trim();
+      const prompt = `学校書類の写真から行事を抽出し、JSONのみ出力してください。
 
 形式:
 [{"date":"YYYY-MM-DD","title":"行事名","time":"時間または終日","items":["持ち物"],"note":"特記事項"}]
 
-ルール: 持ち物なし→items:[] / 日付不明→date:"不明" / 複数行事はすべて含める / JSON以外出力しない${note ? '\n追加メモ: ' + note : ''}`;
+ルール: 持ち物なし→items:[] / 日付不明→date:"不明" / 複数行事はすべて含める / JSON以外出力しない${note?'\n追加メモ: '+note:''}`;
 
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -644,84 +576,95 @@
         },
         body: JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
-          max_tokens: 700,
-          messages: [{
-            role: 'user',
-            content: [
-              { type: 'image', source: { type: 'base64', media_type: mime, data: b64 } },
-              { type: 'text', text: prompt }
-            ]
-          }]
+          max_tokens: Math.min(400 + selected.length * 300, 1200),
+          messages: [{ role:'user', content: [...imageContents, { type:'text', text:prompt }] }]
         })
       });
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
+        const err = await res.json().catch(()=>({}));
         throw new Error(err.error?.message || `APIエラー (${res.status})`);
       }
 
-      const data = await res.json();
-      const text = data.content?.[0]?.text || '';
-
-      // Try to parse JSON
+      const data  = await res.json();
+      const text  = data.content?.[0]?.text || '';
       const match = text.match(/\[[\s\S]*\]/);
+
       if (match) {
         try {
           const events = JSON.parse(match[0]);
           renderEvents(events);
           showToast(`✅ ${events.length}件の行事を読み取りました！`);
         } catch {
-          // JSON parse failed — show raw
-          resultArea.className = '';
-          resultArea.style.display = 'block';
+          resultArea.className = ''; resultArea.style.display = 'block';
           resultArea.innerHTML = `<div class="raw-result">${text}</div>`;
           showToast('✅ 読み取り完了！');
         }
       } else {
-        resultArea.className = '';
-        resultArea.style.display = 'block';
+        resultArea.className = ''; resultArea.style.display = 'block';
         resultArea.innerHTML = `<div class="raw-result">${text}</div>`;
         showToast('✅ 読み取り完了！');
       }
 
     } catch (err) {
-      resultArea.className = 'error';
-      resultArea.style.display = 'block';
-      if (err.message.includes('401') || err.message.toLowerCase().includes('auth')) {
+      resultArea.className = 'error'; resultArea.style.display = 'block';
+      if (err.message.includes('401') || err.message.toLowerCase().includes('auth'))
         resultArea.textContent = '⚠️ APIキーが無効です。設定タブで正しいキーを入力してください。';
-      } else if (err.message.includes('Failed to fetch') || err.message.includes('network')) {
+      else if (err.message.includes('Failed to fetch') || err.message.includes('network'))
         resultArea.textContent = '⚠️ ネットワークエラーです。インターネット接続を確認してください。';
-      } else {
+      else
         resultArea.textContent = '⚠️ エラー：' + err.message;
-      }
     } finally {
-      btn.disabled = !selectedFile;
+      btn.disabled = selectedIds.size === 0;
     }
+  }
+
+  // ── API key ──
+  const API_KEY_STORAGE = 'claude_api_key_v1';
+  function updateKeyStatus(key) {
+    document.getElementById('api-banner').style.display        = key ? 'none'  : 'block';
+    document.getElementById('api-saved-banner').style.display  = key ? 'block' : 'none';
+    const s = document.getElementById('key-status');
+    if (s) s.textContent = key ? `✅ APIキーが保存されています（sk-ant-***${key.slice(-4)}）` : '';
+  }
+  function saveApiKey() {
+    const val = document.getElementById('api-key-input').value.trim();
+    if (!val) { showToast('⚠️ APIキーを入力してください'); return; }
+    if (!val.startsWith('sk-')) { showToast('⚠️ sk- で始まるキーを入力してください'); return; }
+    localStorage.setItem(API_KEY_STORAGE, val);
+    document.getElementById('api-key-input').value = '';
+    updateKeyStatus(val);
+    showToast('✅ APIキーを保存しました！');
+    setTimeout(() => switchTab('main'), 1200);
+  }
+
+  // ── Tabs ──
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (name==='main'&&i===0)||(name==='setup'&&i===1)));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-'+name).classList.add('active');
   }
 
   // ── Toast ──
   function showToast(msg) {
     const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
+    t.textContent = msg; t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3000);
   }
 
-  // ── Reset ──
-  function resetAll() {
-    selectedFile = null; selectedDataUrl = null;
-    ['input-camera','input-library'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('drop-zone').style.display = '';
-    document.getElementById('preview-wrap').style.display = 'none';
-    document.getElementById('preview-img').src = '';
-    document.getElementById('preview-name').textContent = '';
+  // ── Reset results ──
+  function resetResults() {
     document.getElementById('result-card').style.display = 'none';
     document.getElementById('result-area').innerHTML = '';
     document.getElementById('result-area').className = '';
-    document.getElementById('btn-run').disabled = true;
     document.getElementById('extra-note').value = '';
   }
 
+  // ── Init ──
+  async function init() {
+    updateKeyStatus(localStorage.getItem(API_KEY_STORAGE));
+    await loadPhotos();
+  }
   init();
 </script>
 </body>
