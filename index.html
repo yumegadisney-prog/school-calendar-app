@@ -246,7 +246,7 @@
     <div class="card-head"><div class="num">🔑</div><h2>Claude APIキー設定</h2></div>
     <div class="card-body">
       <p style="font-size:13px;color:var(--muted);margin-bottom:11px;line-height:1.6;">
-        Anthropicのコンソール（<strong>console.anthropic.com</strong>）でAPIキーを発行してここに入力してください。キーはこのデバイスにのみ保存されます。
+        Anthropicのコンソール（<strong>console.anthropic.com</strong>）でAPIキーを発行してここに入力してください。キーはこのデバイスにはみ保存されます。
       </p>
       <div class="api-input-row">
         <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off" autocorrect="off" spellcheck="false">
@@ -495,11 +495,16 @@
 
   // ── TimeTree helpers ──
   const TT_CAL_ID = '95Zg2Xazgxko';
-  function timetreeUrl(date) {
-    return `https://timetreeapp.com/calendars/${TT_CAL_ID}/events/new?date=${date}&referer=app`;
-  }
+  const TT_NEW_URL = `https://timetreeapp.com/calendars/${TT_CAL_ID}/events/new`;
+
   function saveTimetreeQueue(events) {
     try { localStorage.setItem('timetree_queue', JSON.stringify(events)); } catch(e) {}
+  }
+
+  // 1件をCowork経由でTimeTree登録
+  function registerOneTimetree(ev) {
+    saveTimetreeQueue([ev]);
+    showToast('🌲 Coworkに「このイベントをTimeTreeに登録して」と伝えてください！');
   }
 
   // ── Render events ──
@@ -538,12 +543,12 @@
           a2.textContent = `🛒 ${jpDate(sat)}に買い物リスト追加`;
           btns.appendChild(a2);
         }
-        // TimeTree button
-        const a3 = document.createElement('a');
-        a3.href = timetreeUrl(ev.date);
-        a3.target = '_blank'; a3.className = 'gcal-btn gcal-timetree';
-        a3.textContent = '🌲 TimeTree（✨悠希&葵✨）に登録';
-        btns.appendChild(a3);
+        // TimeTree button（Cowork経由で自動入力）
+        const btn3 = document.createElement('button');
+        btn3.className = 'gcal-btn gcal-timetree';
+        btn3.textContent = '🌲 TimeTree（✨悠希&葵✨）に登録';
+        btn3.onclick = () => registerOneTimetree(ev);
+        btns.appendChild(btn3);
       }
       area.appendChild(div);
     });
