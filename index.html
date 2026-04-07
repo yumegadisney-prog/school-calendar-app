@@ -231,6 +231,8 @@
     </div>
   </div>
 
+  <div id="tt-queue-badge" style="display:none;background:#E8FFF0;border:1.5px solid #00B900;border-radius:12px;padding:10px 15px;font-size:13px;font-weight:600;color:#007700;text-align:center;margin-bottom:8px;"></div>
+
   <div class="action-btns">
     <button class="btn btn-primary" id="btn-run" onclick="runClaude()" disabled>
       ▶️ 実行（選択した写真をClaudeに送る）
@@ -248,7 +250,7 @@
     <div class="card-head"><div class="num">🔑</div><h2>Claude APIキー設定</h2></div>
     <div class="card-body">
       <p style="font-size:13px;color:var(--muted);margin-bottom:11px;line-height:1.6;">
-        Anthropicのコンソール（<strong>console.anthropic.com</strong>）でAPIキーを発行してここに入力してください。キーはこのデバイスにはみ保存されます。
+        Anthropicのコンソール（<strong>console.anthropic.com</strong>）でAPIキーを発行してここに入力してください。キーはこのデバイスにのみ保存されます。
       </p>
       <div class="api-input-row">
         <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off" autocorrect="off" spellcheck="false">
@@ -503,19 +505,39 @@
     try { localStorage.setItem('timetree_queue', JSON.stringify(events)); } catch(e) {}
   }
 
-  // 1件をCowork経由でTimeTree登録
+  function getTimetreeQueue() {
+    try { return JSON.parse(localStorage.getItem('timetree_queue') || '[]'); } catch(e) { return []; }
+  }
+
+  // 1件をTimeTreeキューに追加（既存キューにマージ）
   function registerOneTimetree(ev) {
-    saveTimetreeQueue([ev]);
-    showToast('🌲 TimeTree登録中… 最大41分で自動完了します！');
+    const existing = getTimetreeQueue();
+    // 同日・同タイトルの重複を除いてから追加
+    const merged = existing.filter(e => !(e.date === ev.date && e.title === ev.title));
+    merged.push(ev);
+    saveTimetreeQueue(merged);
+    updateQueueBadge();
+    showToast(`🌲 TimeTree登録キューに追加！（${merged.length}件待機中）`);
+  }
+
+  // キュー件数バッジ更新
+  function updateQueueBadge() {
+    const q = getTimetreeQueue();
+    const badge = document.getElementById('tt-queue-badge');
+    if (!badge) return;
+    if (q.length > 0) {
+      badge.textContent = `🌲 TimeTree登録待ち：${q.length}件`;
+      badge.style.display = 'block';
+    } else {
+      badge.style.display = 'none';
+    }
   }
 
   // ── Render events ──
   function renderEvents(events) {
     const area = document.getElementById('result-area');
     area.className = ''; area.style.display = 'block'; area.innerHTML = '';
-    // Store for Cowork/TimeTree automation
     window.lastExtractedEvents = events;
-    saveTimetreeQueue(events);
     events.forEach(ev => {
       const hasDate = ev.date && ev.date !== '不明' && /^\d{4}-\d{2}-\d{2}$/.test(ev.date);
       const items   = Array.isArray(ev.items) ? ev.items.filter(Boolean) : [];
@@ -546,7 +568,7 @@
           btns.appendChild(a2);
           // TimeTree用：前週土曜に買い物イベント登録
           const satStr = `${sat.getFullYear()}-${String(sat.getMonth()+1).padStart(2,'0')}-${String(sat.getDate()).padStart(2,'0')}`;
-          const shopEv = { date: satStr, title: `🛒 買い物リスト`, time: '10:00～12:00', items: items, note: `${ev.title}（${ev.date}）の準備\n${items.join('・')}` };
+          const shopEv = { date: satStr, title: `🛒 買い物リスト`, time: '10:00〜12:00', items: items, note: `${ev.title}（${ev.date}）の準備\n${items.join('・')}` };
           const btnShop = document.createElement('button');
           btnShop.className = 'gcal-btn gcal-timetree';
           btnShop.textContent = `🌲 ${jpDate(sat)}にTimeTree買い物登録`;
@@ -571,7 +593,8 @@
       ttBtn.innerHTML = `🌲 全${eventsWithDate.length}件をTimeTreeに一括登録`;
       ttBtn.onclick = () => {
         saveTimetreeQueue(eventsWithDate);
-        showToast('🌲 TimeTree一括登録中… 最大41分で自動完了します！');
+        updateQueueBadge();
+        showToast(`🌲 全${eventsWithDate.length}件をキューに登録！最大1分で自動完了します！`);
       };
       area.appendChild(ttBtn);
     }
@@ -602,18 +625,18 @@
       });
 
       const note   = document.getElementById('extra-note').value.trim();
-      const prompt = `学校書類の写真から行事・日程・持ち物をすべて正確に抽出し、JSONのみ出力してください。
+      const prompt = `学校書類の写真から行事・日程・持ち物をすべて正確に抽出し、JSONのみ出力してくださえ。
 
 【出力形式】
 [{"date":"YYYY-MM-DD","title":"行事名","time":"時間（例:9:00〜15:00）または終日","items":["持ち物1","持ち物2",...],"note":"特記事項"}]
 
 【持ち物の抽出ルール（最重要・漏れなく）】
-・「持ち物」「準備物」「持参」「必要なもの」「用意するもの」「ご準備」「ご用意」など、あらゆる表現を探す
+・「持ち物」「準備物」「持参」「必要なもの」「ご準備」「ご用意」など、あらゆる表現を探す
 ・箇条書きだけでなく、文章の中に書かれた持ち物も必ず拾う
 ・「〜を持参してください」「〜をご用意ください」「〜が必要です」のような文も対象
-・よくある持ち物（弁当・お弁当、水筒、体操服・体操着、上靴・上履き、帽子・赤白帽・紅白帽、タオル、着替え、レジャーシート、雨具・カッパ・傘、リュック・ランドセル・袋、なわとび、絵の具セット、習字道具・書道セット、裁縫道具、自由帳、色鎔筆、クレヨン・パス、のり・スティックのり、はさみ、定規、コンパス、分度器、彫刻刀・版画セット、エプロン・三角巾、マスク、防災頭巾、上ばき袋・体育館シューズ、水着・スイミングキャップ・ゴーグル、鍵盤ハーモニカ・リコーダー）は特に見落とさない
+・よくある持ち物（弁当・お弁当、水筒、体操服・体操着、上靴・上履き、帽子・赤白帽・紅白帽、タオル、着替え、レジャーシート、雨具・カッパ・傘、リュック・ランドセル・袋、なわとび、絵の具セット、習字道具・書道セット、裁縫道具、自由帳、色鉛筆、クレヨン・パス、のり・スティックのり、はさみ、定規、コンパス、分度器、彫刻刀・版画セット、エプロン・三角巾、マスク、防災頭巾、上ばき袋・体育館シューズ、水着・スイミングキャップ・ゴーグル、鍵盤ハーモニカ・リコーダー）は特に見落とさない
 ・持ち物は1アイテムごとに別々の要素にする（まとめて1つにしない）
-・1冊・1本など数量の記載があれば含める（例: "色鉛筆（12色以上）"）
+・1冊・1本など数量の記載があれば含める（例: "色鉛筆（12色以上）"/��
 ・持ち物が書かれていない場合のみ items:[]
 
 【日程・時間のルール】
@@ -622,10 +645,10 @@
 
 【その他のルール】
 ・複数の行事はすべて個別に含める
+・画像が複数ある場合は、すべての画像から行事を抽出し、1つのJSON配列に統合する
 ・「雨天中止」「雨天延期」「荒天時〜」などはnoteに記載
 ・集合場所・集合時刻・解散場所などもnoteに記載
-・画像が複数ある場合は、すべての画像から演事を抽出し、1つのJSON配列に統合する
-・JSON以外は一切出力しない${note?'\n\n《追加メモ（優先）》'+note:''}`;
+・JSON以外は一切出力しない${note?'\n\n【追加メモ（優先）】'+note:''}`;
 
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -670,9 +693,9 @@
     } catch (err) {
       resultArea.className = 'error'; resultArea.style.display = 'block';
       if (err.message.includes('401') || err.message.toLowerCase().includes('auth'))
-        resultArea.textContent = '⚠️ APIキーが無効です。設定タブで正しいキーを入力してください。';
+        resultArea.textContent = '⚠️ APIキーが無効です。設定タブで正しいキーを入力してくださえ。';
       else if (err.message.includes('Failed to fetch') || err.message.includes('network'))
-        resultArea.textContent = '⚠️ ネットワークエラーです。インターネット接続を確認してください。';
+        resultArea.textContent = '⚠️ ネットワークエラーです。インターネット接続を確認してくださえ。';
       else
         resultArea.textContent = '⚠️ エラー：' + err.message;
     } finally {
@@ -706,44 +729,54 @@
     document.getElementById('panel-'+name).classList.add('active');
   }
 
-  // ── Cute icon + manifest ──
-  (function(){
-    const s=192,r=42,cv=document.createElement('canvas');
-    cv.width=cv.height=s;
-    const ctx=cv.getContext('2d'),g=ctx.createLinearGradient(0,0,s,s);
-    g.addColorStop(0,'#FF9898');g.addColorStop(1,'#D05050');
-    ctx.fillStyle=g;
-    ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(s-r,0);ctx.quadraticCurveTo(s,0,s,r);
-    ctx.lineTo(s,s-r);ctx.quadraticCurveTo(s,s,s-r,s);
-    ctx.lineTo(r,s);ctx.quadraticCurveTo(0,s,0,s-r);
-    ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();ctx.fill();
-    ctx.font='108px serif';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText('📅',96,104);
-    ctx.font='48px serif';ctx.fillText('✨',155,42);
-    ctx.font='36px serif';ctx.fillText('🌸',36,162);
-    const url=cv.toDataURL('image/png');
-    window.__iconUrl=url;
-    const li=document.getElementById('apple-icon');if(li)li.href=url;
-    const mf={name:'学校行事カレンダー',short_name:'学校行事📅',
+  // ── Cute icon + manifest (canvas-generated) ──
+  (function() {
+    const s = 192, r = 42;
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = s;
+    const ctx = cv.getContext('2d');
+    const g = ctx.createLinearGradient(0, 0, s, s);
+    g.addColorStop(0, '#FF9898'); g.addColorStop(1, '#D05050');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(r,0); ctx.lineTo(s-r,0); ctx.quadraticCurveTo(s,0,s,r);
+    ctx.lineTo(s,s-r); ctx.quadraticCurveTo(s,s,s-r,s);
+    ctx.lineTo(r,s); ctx.quadraticCurveTo(0,s,0,s-r);
+    ctx.lineTo(0,r); ctx.quadraticCurveTo(0,0,r,0);
+    ctx.closePath(); ctx.fill();
+    ctx.font = '108px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('📅', 96, 104);
+    ctx.font = '48px serif'; ctx.fillText('✨', 155, 42);
+    ctx.font = '36px serif'; ctx.fillText('🌸', 36, 162);
+    const url = cv.toDataURL('image/png');
+    window.__iconUrl = url;
+    const li = document.getElementById('apple-icon');
+    if (li) li.href = url;
+    const mf = { name:'学校行事カレンダー', short_name:'学校行事📅',
       icons:[{src:url,sizes:'192x192',type:'image/png'}],
-      start_url:'.',display:'standalone',
-      background_color:'#FFF5F5',theme_color:'#F07070'};
-    const ml=document.getElementById('app-manifest');
-    if(ml)ml.href='data:application/manifest+json,'+encodeURIComponent(JSON.stringify(mf));
+      start_url:'.', display:'standalone',
+      background_color:'#FFF5F5', theme_color:'#F07070' };
+    const ml = document.getElementById('app-manifest');
+    if (ml) ml.href = 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify(mf));
   })();
 
-  // ── 通知許可 ──
-  function requestNotifPermission(){
-    if('Notification' in window&&Notification.permission==='default')
+  // ── 通知許可リクエスト ──
+  function requestNotifPermission() {
+    if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
+    }
   }
 
   // ── Toast ──
   function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg; t.classList.add('show');
-    if(msg.includes('✅')&&msg.includes('TimeTree')&&Notification.permission==='granted'){
-      new Notification('📅 学校行事アプリ',{body:msg,icon:window.__iconUrl||''});
+    // TimeTree完了時はシステム通知も表示＋バッジ更新
+    if (msg.includes('✅') && msg.includes('TimeTree')) {
+      updateQueueBadge();
+      if (Notification.permission === 'granted') {
+        new Notification('📅 学校行事アプリ', { body: msg, icon: window.__iconUrl || '' });
+      }
     }
     setTimeout(() => t.classList.remove('show'), 3000);
   }
@@ -761,6 +794,7 @@
     requestNotifPermission();
     updateKeyStatus(localStorage.getItem(API_KEY_STORAGE));
     await loadPhotos();
+    updateQueueBadge();
   }
   init();
 </script>
