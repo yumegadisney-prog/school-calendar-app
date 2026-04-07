@@ -542,6 +542,14 @@
           a2.target = '_blank'; a2.className = 'gcal-btn gcal-shop';
           a2.textContent = `🛒 ${jpDate(sat)}に買い物リスト追加`;
           btns.appendChild(a2);
+          // TimeTree用：前週土曜に買い物イベント登録
+          const satStr = `${sat.getFullYear()}-${String(sat.getMonth()+1).padStart(2,'0')}-${String(sat.getDate()).padStart(2,'0')}`;
+          const shopEv = { date: satStr, title: `🛒 買い物リスト`, time: '10:00～12:00', items: items, note: `${ev.title}（${ev.date}）の準備\n${items.join('・')}` };
+          const btnShop = document.createElement('button');
+          btnShop.className = 'gcal-btn gcal-timetree';
+          btnShop.textContent = `🌲 ${jpDate(sat)}にTimeTree買い物登録`;
+          btnShop.onclick = () => registerOneTimetree(shopEv);
+          btns.appendChild(btnShop);
         }
         // TimeTree button（Cowork経由で自動入力）
         const btn3 = document.createElement('button');
@@ -614,6 +622,7 @@
 ・複数の行事はすべて個別に含める
 ・「雨天中止」「雨天延期」「荒天時〜」などはnoteに記載
 ・集合場所・集合時刻・解散場所などもnoteに記載
+・画像が複数ある場合は、すべての画像から演事を抽出し、1つのJSON配列に統合する
 ・JSON以外は一切出力しない${note?'\n\n《追加メモ（優先）》'+note:''}`;
 
       const res = await fetch('https://api.anthropic.com/v1/messages', {
