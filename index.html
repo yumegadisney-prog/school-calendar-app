@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="書類登録">
+  <meta name="apple-mobile-web-app-title" content="学校行事📅">
+  <link rel="apple-touch-icon" id="apple-icon" href="">
+  <link rel="manifest" id="app-manifest" href="">
   <title>📅 学校書類カレンダー登録</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -704,10 +706,45 @@
     document.getElementById('panel-'+name).classList.add('active');
   }
 
+  // ── Cute icon + manifest ──
+  (function(){
+    const s=192,r=42,cv=document.createElement('canvas');
+    cv.width=cv.height=s;
+    const ctx=cv.getContext('2d'),g=ctx.createLinearGradient(0,0,s,s);
+    g.addColorStop(0,'#FF9898');g.addColorStop(1,'#D05050');
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(s-r,0);ctx.quadraticCurveTo(s,0,s,r);
+    ctx.lineTo(s,s-r);ctx.quadraticCurveTo(s,s,s-r,s);
+    ctx.lineTo(r,s);ctx.quadraticCurveTo(0,s,0,s-r);
+    ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();ctx.fill();
+    ctx.font='108px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('📅',96,104);
+    ctx.font='48px serif';ctx.fillText('✨',155,42);
+    ctx.font='36px serif';ctx.fillText('🌸',36,162);
+    const url=cv.toDataURL('image/png');
+    window.__iconUrl=url;
+    const li=document.getElementById('apple-icon');if(li)li.href=url;
+    const mf={name:'学校行事カレンダー',short_name:'学校行事📅',
+      icons:[{src:url,sizes:'192x192',type:'image/png'}],
+      start_url:'.',display:'standalone',
+      background_color:'#FFF5F5',theme_color:'#F07070'};
+    const ml=document.getElementById('app-manifest');
+    if(ml)ml.href='data:application/manifest+json,'+encodeURIComponent(JSON.stringify(mf));
+  })();
+
+  // ── 通知許可 ──
+  function requestNotifPermission(){
+    if('Notification' in window&&Notification.permission==='default')
+      Notification.requestPermission();
+  }
+
   // ── Toast ──
   function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg; t.classList.add('show');
+    if(msg.includes('✅')&&msg.includes('TimeTree')&&Notification.permission==='granted'){
+      new Notification('📅 学校行事アプリ',{body:msg,icon:window.__iconUrl||''});
+    }
     setTimeout(() => t.classList.remove('show'), 3000);
   }
 
@@ -721,6 +758,7 @@
 
   // ── Init ──
   async function init() {
+    requestNotifPermission();
     updateKeyStatus(localStorage.getItem(API_KEY_STORAGE));
     await loadPhotos();
   }
