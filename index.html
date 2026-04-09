@@ -209,7 +209,7 @@
         <button class="upload-btn btn-pdf" onclick="document.getElementById('input-pdf').click()">📄 PDF</button>
       </div>
       <input type="file" id="input-camera"  accept="image/*" capture="environment" multiple>
-      <input type="file" id="input-photos" accept="image/*" multiple>
+      <input type="file" id="input-photos" accept="image/*,.heic,.heif" multiple>
       <input type="file" id="input-pdf" accept="application/pdf,.pdf" multiple>
     </div>
   </div>
@@ -315,6 +315,7 @@
 
 <div id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
 <script>
   // ── IndexedDB ──
   const DB_NAME  = 'schoolCalDB_v1';
@@ -478,20 +479,41 @@
     });
   }
 
+  // ── HEIC判定 ──
+  function isHeic(file) {
+    return file.type === 'image/heic' || file.type === 'image/heif'
+      || /\.heic$/i.test(file.name) || /\.heif$/i.test(file.name);
+  }
+
   // ── File handling ──
   async function handleFiles(files) {
-    const imgs = [...files].filter(f => f.type.startsWith('image/'));
-    const pdfs = [...files].filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
+    const allFiles = [...files];
+    const imgs = allFiles.filter(f => f.type.startsWith('image/') || isHeic(f));
+    const pdfs = allFiles.filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
     if (!imgs.length && !pdfs.length) return;
     showToast(`⏳ ${imgs.length + pdfs.length}件を保存中…`);
     for (const file of imgs) {
+      let blob = file;
+      let name = file.name;
+      // HEIC → JPEG 変換
+      if (isHeic(file)) {
+        try {
+          showToast('⏳ HEICをJPEGに変換中…');
+          const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 });
+          blob = Array.isArray(converted) ? converted[0] : converted;
+          name = name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg');
+        } catch(e) {
+          showToast('⚠️ HEIC変換失敗：' + e.message);
+          continue;
+        }
+      }
       const dataUrl = await new Promise(res => {
         const r = new FileReader();
         r.onload = e => res(e.target.result);
-        r.readAsDataURL(file);
+        r.readAsDataURL(blob);
       });
       const resized = await resizeImage(dataUrl);
-      await dbAdd(file.name, resized, 'image');
+      await dbAdd(name, resized, 'image');
     }
     for (const file of pdfs) {
       const dataUrl = await new Promise(res => {
@@ -575,7 +597,7 @@
       div.className = 'ev-card';
       div.innerHTML = `
         <div class="ev-title">📅 ${ev.date||'日付不明'} ${ev.time||'終日'}　${ev.title||''}</div>
-        ${items.length ? `<div class="ev-items">🎒 ${items.join('・')}|/div>` : ''}
+        ${items.length ? `<div class="ev-items">🎒 ${items.join('・')}</div>` : ''}
         ${ev.note  ? `<div class="ev-note">📝 ${ev.note}</div>` : ''}
         <div class="ev-btns"></div>`;
       const btns = div.querySelector('.ev-btns');
@@ -666,8 +688,8 @@
 【持ち物の抽出ルール（最重要・漏れなく）】
 ・「持ち物」「準備物」「持参」「必要なもの」「用意するもの」「ご準備」「ご用意」など、あらゆる表現を探す
 ・箇条書きだけでなく、文章の中に書かれた持ち物も必ず拾う
-・「〜を持参してください」「〜をご用意ください」「〜が必要です」のような文も対象
-・よくある持ち物（弁当・お弁当、水筒、体操服・体操着、上靴・上履き、帽子・赤白帽・紅白帽、タオル、着替え、レジャーシート、雨具・カッパ・傘、リュック・ランドセル・袋、なわとび、絵の具セット、習字道具・書道セット、裁縫道具、自由帳、色鉛筆、クレヨン・パス、のり・スティックのり、はさみ、定規、コンパス、分度器、彫刻刀・版画セット、エプロン・三角巾、マスク、防災頭巾、上ばき袋・体育館シューズ、水着・スイミングキャップ・ゴーグル、鍵盤ハーモニカ・リコーダー）は特に見落とさない
+・「〜を持参してください」「〜をご用意こださい」「〜が必要です」のような文も対象
+・よくある持ち物（弁当・お弁当、水筒、体操服・体操着、上靴・上履き、帽子・赤白帽・紅白帽、タオル、着替え、レジャーシート、雨具・カッパ・傘、リュックーランドセル・袋、なわ#��び、絵の具セット、習字道具・書道セット、裁縫道具、自由帳、色鉛筆、クレヨン・パス、のり・スティックのり、はさみ、定規、コンパス、分度器、彫刻刀・版画セット、エプロン・三角巾、マスク、防災頭巾、上ばき袋・体育館シューズ、水着・スイミングキャップ・ゴーグル、鍵盤ハーモニカ・リコーダー）は特に見落とさない
 ・持ち物は1アイテムごとに別々の要素にする（まとめて1つにしない）
 ・1冊・1本など数量の記載があれば含める（例: "色鉛筆（12色以上）"）
 ・持ち物が書かれていない場合のみ items:[]
