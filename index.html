@@ -100,7 +100,16 @@
     .upload-btn:active { transform: scale(.96); }
     .btn-camera  { background: var(--coral); color: #fff; }
     .btn-library { background: var(--coral-l); color: var(--coral-d); border: 1.5px solid var(--coral); }
-    #input-camera, #input-photos { display: none; }
+    #input-camera, #input-photos, #input-pdf { display: none; }
+    .btn-pdf { background: var(--blue-l); color: var(--blue); border: 1.5px solid var(--blue); }
+    .pdf-thumb {
+      width: 100%; height: 100%;
+      background: #EEF3FF;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; pointer-events: none;
+    }
+    .pdf-thumb .pdf-icon { font-size: 28px; line-height: 1; }
+    .pdf-thumb .pdf-name { font-size: 9px; color: var(--blue); font-weight: 700; text-align: center; padding: 0 4px; word-break: break-all; line-height: 1.3; }
 
     /* Settings */
     .setting-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
@@ -196,10 +205,12 @@
       </div>
       <div class="gallery-btns">
         <button class="upload-btn btn-camera" onclick="document.getElementById('input-camera').click()">📷 撮影</button>
-        <button class="upload-btn btn-library" onclick="document.getElementById('input-photos').click()">🖼 追加（複数可）</button>
+        <button class="upload-btn btn-library" onclick="document.getElementById('input-photos').click()">🖼 画像</button>
+        <button class="upload-btn btn-pdf" onclick="document.getElementById('input-pdf').click()">📄 PDF</button>
       </div>
       <input type="file" id="input-camera"  accept="image/*" capture="environment" multiple>
       <input type="file" id="input-photos" accept="image/*" multiple>
+      <input type="file" id="input-pdf" accept="application/pdf,.pdf" multiple>
     </div>
   </div>
 
@@ -218,7 +229,7 @@
       </div>
       <div class="setting-row">
         <span class="setting-label">追加メモ</span>
-        <input type="text" id="extra-note" placeholder="あれば入力…">
+        <input type="text" id="extra-note" placeholder="うれば入力…">
       </div>
     </div>
   </div>
@@ -235,7 +246,7 @@
 
   <div class="action-btns">
     <button class="btn btn-primary" id="btn-run" onclick="runClaude()" disabled>
-      ▶️ 実行（選択した写真をClaudeに送る）
+      ▶️ 実行（選択した写真・PDFをClaudeに送る）
     </button>
     <button class="btn btn-outline" onclick="resetResults()">🔄 結果をリセット</button>
   </div>
@@ -324,11 +335,11 @@
     });
   }
 
-  async function dbAdd(name, dataUrl) {
+  async function dbAdd(name, dataUrl, fileType = 'image') {
     const db = await getDB();
     return new Promise((res, rej) => {
       const tx  = db.transaction(DB_STORE, 'readwrite');
-      const req = tx.objectStore(DB_STORE).add({ name, dataUrl, savedAt: Date.now() });
+      const req = tx.objectStore(DB_STORE).add({ name, dataUrl, savedAt: Date.now(), fileType });
       req.onsuccess = () => res(req.result);
       tx.onerror = e => rej(e.target.error);
     });
@@ -392,10 +403,19 @@
       const div = document.createElement('div');
       div.className = 'photo-item' + (sel ? ' selected' : '');
 
-      const img  = document.createElement('img');
-      img.src    = photo.dataUrl;
-      img.className = 'photo-thumb';
-      img.alt    = photo.name;
+      let imgEl;
+      if (photo.fileType === 'pdf') {
+        imgEl = document.createElement('div');
+        imgEl.className = 'pdf-thumb';
+        const shortName = photo.name.replace(/\.pdf$/i,'').substring(0,18);
+        imgEl.innerHTML = `<div class="pdf-icon">📄</div><div class="pdf-name">${shortName}</div>`;
+      } else {
+        imgEl = document.createElement('img');
+        imgEl.src    = photo.dataUrl;
+        imgEl.className = 'photo-thumb';
+        imgEl.alt    = photo.name;
+      }
+      const img = imgEl;
 
       const chk  = document.createElement('div');
       chk.className = 'photo-check';
@@ -461,8 +481,9 @@
   // ── File handling ──
   async function handleFiles(files) {
     const imgs = [...files].filter(f => f.type.startsWith('image/'));
-    if (!imgs.length) return;
-    showToast(`⏳ ${imgs.length}枚を保存中…`);
+    const pdfs = [...files].filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
+    if (!imgs.length && !pdfs.length) return;
+    showToast(`⏳ ${imgs.length + pdfs.length}件を保存中…`);
     for (const file of imgs) {
       const dataUrl = await new Promise(res => {
         const r = new FileReader();
@@ -470,7 +491,15 @@
         r.readAsDataURL(file);
       });
       const resized = await resizeImage(dataUrl);
-      await dbAdd(file.name, resized);
+      await dbAdd(file.name, resized, 'image');
+    }
+    for (const file of pdfs) {
+      const dataUrl = await new Promise(res => {
+        const r = new FileReader();
+        r.onload = e => res(e.target.result);
+        r.readAsDataURL(file);
+      });
+      await dbAdd(file.name, dataUrl, 'pdf');
     }
     await loadPhotos();
     showToast(`✅ ${imgs.length}枚を保存しました！`);
@@ -482,6 +511,7 @@
 
   document.getElementById('input-camera').addEventListener('change', e => { handleFiles(e.target.files); e.target.value=''; });
   document.getElementById('input-photos').addEventListener('change', e => { handleFiles(e.target.files); e.target.value=''; });
+  document.getElementById('input-pdf').addEventListener('change',    e => { handleFiles(e.target.files); e.target.value=''; });
 
   // ── Calendar helpers ──
   function toYMD(d) { return d.toISOString().slice(0,10).replace(/-/g,''); }
@@ -545,7 +575,7 @@
       div.className = 'ev-card';
       div.innerHTML = `
         <div class="ev-title">📅 ${ev.date||'日付不明'} ${ev.time||'終日'}　${ev.title||''}</div>
-        ${items.length ? `<div class="ev-items">🎒 ${items.join('・')}</div>` : ''}
+        ${items.length ? `<div class="ev-items">🎒 ${items.join('・')}|/div>` : ''}
         ${ev.note  ? `<div class="ev-note">📝 ${ev.note}</div>` : ''}
         <div class="ev-btns"></div>`;
       const btns = div.querySelector('.ev-btns');
@@ -621,22 +651,25 @@
       const imageContents = selected.map(p => {
         const parts = p.dataUrl.split(',');
         const mime  = (parts[0].match(/:(.*?);/)||[])[1] || 'image/jpeg';
+        if (p.fileType === 'pdf' || mime === 'application/pdf') {
+          return { type:'document', source:{ type:'base64', media_type:'application/pdf', data:parts[1] } };
+        }
         return { type:'image', source:{ type:'base64', media_type:mime, data:parts[1] } };
       });
 
       const note   = document.getElementById('extra-note').value.trim();
-      const prompt = `学校書類の写真から行事・日程・持ち物をすべて正確に抽出し、JSONのみ出力してくださえ。
+      const prompt = `学校書類の写真から行事・日程・持ち物をすべて正確に抽出し、JSONのみ出力してください。
 
 【出力形式】
 [{"date":"YYYY-MM-DD","title":"行事名","time":"時間（例:9:00〜15:00）または終日","items":["持ち物1","持ち物2",...],"note":"特記事項"}]
 
 【持ち物の抽出ルール（最重要・漏れなく）】
-・「持ち物」「準備物」「持参」「必要なもの」「ご準備」「ご用意」など、あらゆる表現を探す
+・「持ち物」「準備物」「持参」「必要なもの」「用意するもの」「ご準備」「ご用意」など、あらゆる表現を探す
 ・箇条書きだけでなく、文章の中に書かれた持ち物も必ず拾う
 ・「〜を持参してください」「〜をご用意ください」「〜が必要です」のような文も対象
 ・よくある持ち物（弁当・お弁当、水筒、体操服・体操着、上靴・上履き、帽子・赤白帽・紅白帽、タオル、着替え、レジャーシート、雨具・カッパ・傘、リュック・ランドセル・袋、なわとび、絵の具セット、習字道具・書道セット、裁縫道具、自由帳、色鉛筆、クレヨン・パス、のり・スティックのり、はさみ、定規、コンパス、分度器、彫刻刀・版画セット、エプロン・三角巾、マスク、防災頭巾、上ばき袋・体育館シューズ、水着・スイミングキャップ・ゴーグル、鍵盤ハーモニカ・リコーダー）は特に見落とさない
 ・持ち物は1アイテムごとに別々の要素にする（まとめて1つにしない）
-・1冊・1本など数量の記載があれば含める（例: "色鉛筆（12色以上）"/��
+・1冊・1本など数量の記載があれば含める（例: "色鉛筆（12色以上）"）
 ・持ち物が書かれていない場合のみ items:[]
 
 【日程・時間のルール】
@@ -693,9 +726,9 @@
     } catch (err) {
       resultArea.className = 'error'; resultArea.style.display = 'block';
       if (err.message.includes('401') || err.message.toLowerCase().includes('auth'))
-        resultArea.textContent = '⚠️ APIキーが無効です。設定タブで正しいキーを入力してくださえ。';
+        resultArea.textContent = '⚠️ APIキーが無効です。設定タブで正しいキーを入力してください。';
       else if (err.message.includes('Failed to fetch') || err.message.includes('network'))
-        resultArea.textContent = '⚠️ ネットワークエラーです。インターネット接続を確認してくださえ。';
+        resultArea.textContent = '⚠️ ネットワークエラーです。インターネット接続を確認してください。';
       else
         resultArea.textContent = '⚠️ エラー：' + err.message;
     } finally {
