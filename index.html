@@ -345,8 +345,9 @@
     return new Promise((res, rej) => {
       const tx  = db.transaction(DB_STORE, 'readwrite');
       const req = tx.objectStore(DB_STORE).add({ name, dataUrl, savedAt: Date.now(), fileType });
-      req.onsuccess = () => res(req.result);
+      tx.oncomplete = () => res(req.result);
       tx.onerror = e => rej(e.target.error);
+      tx.onabort  = e => rej(e.target.error);
     });
   }
 
