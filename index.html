@@ -65,6 +65,10 @@
     #photo-grid {
       display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
       min-height: 80px;
+      border: 2px dashed transparent; border-radius: 12px; transition: border-color .2s, background .2s;
+    }
+    #photo-grid.drag-over {
+      border-color: var(--coral); background: var(--coral-ll);
     }
     .photo-empty { grid-column: 1/-1; text-align: center; color: var(--muted); font-size: 13px; padding: 20px 0; line-height: 1.8; }
     .photo-empty span { font-size: 12px; }
@@ -208,7 +212,7 @@
         <button class="upload-btn btn-library" onclick="document.getElementById('input-photos').click()">🖼 画像</button>
         <button class="upload-btn btn-pdf" onclick="document.getElementById('input-pdf').click()">📄 PDF</button>
       </div>
-      <input type="file" id="input-camera"  accept="image/*" capture="environment" multiple>
+      <input type="file" id="input-camera"  accept="image/*" multiple>
       <input type="file" id="input-photos" accept="image/*" multiple>
       <input type="file" id="input-pdf" accept="application/pdf,.pdf" multiple>
     </div>
@@ -272,7 +276,7 @@
   </div>
 
   <div class="setup-box">
-    <h3>📱 iPhoneでの使い方</h3>
+    <h3>📱 iPhoneでの使え方</h3>
     <div class="step-row">
       <div class="step-num">1</div>
       <div class="step-text">
@@ -561,6 +565,26 @@
   document.getElementById('input-photos').addEventListener('change', e => { handleFiles(e.target.files); e.target.value=''; });
   document.getElementById('input-pdf').addEventListener('change',    e => { handleFiles(e.target.files); e.target.value=''; });
 
+  // モバイルのみ capture="environment" を付与
+  if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+    document.getElementById('input-camera').setAttribute('capture', 'environment');
+  }
+
+  // ── ドラッグ＆ドロップ (PC向け) ──
+  const photoGrid = document.getElementById('photo-grid');
+  photoGrid.addEventListener('dragover', e => {
+    e.preventDefault();
+    photoGrid.classList.add('drag-over');
+  });
+  photoGrid.addEventListener('dragleave', e => {
+    if (!photoGrid.contains(e.relatedTarget)) photoGrid.classList.remove('drag-over');
+  });
+  photoGrid.addEventListener('drop', e => {
+    e.preventDefault();
+    photoGrid.classList.remove('drag-over');
+    if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+  });
+
   // ── Calendar helpers ──
   function toYMD(d) { return d.toISOString().slice(0,10).replace(/-/g,''); }
   function addDays(d, n) { const r = new Date(d); r.setDate(r.getDate()+n); return r; }
@@ -587,7 +611,7 @@
     try { return JSON.parse(localStorage.getItem('timetree_queue') || '[]'); } catch(e) { return []; }
   }
 
-  // 1件をTimeTreeキューに追加（既存キューにマージ）
+  // 1件をTimeTreeキューに追加（既存キューにブージ）
   function registerOneTimetree(ev) {
     const existing = getTimetreeQueue();
     // 同日・同タイトルの重複を除いてから追加
@@ -691,7 +715,7 @@
     const resultCard = document.getElementById('result-card');
     const resultArea = document.getElementById('result-area');
     resultCard.style.display = 'block';
-    resultArea.className = 'loading';
+  2 resultArea.className = 'loading';
     resultArea.innerHTML = `<div class="spinner"></div> ${selected.length}枚の書類を読み取り中…`;
     resultCard.scrollIntoView({ behavior:'smooth', block:'nearest' });
 
@@ -762,7 +786,7 @@
           showToast(`✅ ${events.length}件の行事を読み取りました！`);
         } catch {
           resultArea.className = ''; resultArea.style.display = 'block';
-          resultArea.innerHTML = `<div class="raw-result">${text}</div>`;
+  2       resultArea.innerHTML = `<div class="raw-result">${text}</div>`;
           showToast('✅ 読み取り完了！');
         }
       } else {
@@ -778,7 +802,7 @@
       else if (err.message.includes('Failed to fetch') || err.message.includes('network'))
         resultArea.textContent = '⚠️ ネットワークエラーです。インターネット接続を確認してください。';
       else
-        resultArea.textContent = '⚠️ エラー：' + err.message;
+    2   resultArea.textContent = '⚠️ エラー：' + err.message;
     } finally {
       btn.disabled = selectedIds.size === 0;
     }
@@ -836,12 +860,12 @@
     const mf = { name:'学校行事カレンダー', short_name:'学校行事📅',
       icons:[{src:url,sizes:'192x192',type:'image/png'}],
       start_url:'.', display:'standalone',
-      background_color:'#FFF5F5', theme_color:'#F07070' };
+    2 background_color:'#FFF5F5', theme_color:'#F07070' };
     const ml = document.getElementById('app-manifest');
     if (ml) ml.href = 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify(mf));
   })();
 
-  // ── 通知許可リクエスト ──
+  // ── 通知許可リタエスト ──
   function requestNotifPermission() {
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
