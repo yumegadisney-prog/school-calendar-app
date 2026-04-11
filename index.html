@@ -209,7 +209,7 @@
         <button class="upload-btn btn-pdf" onclick="document.getElementById('input-pdf').click()">📄 PDF</button>
       </div>
       <input type="file" id="input-camera"  accept="image/*" capture="environment" multiple>
-      <input type="file" id="input-photos" accept="image/*,.heic,.heif" multiple>
+      <input type="file" id="input-photos" accept="image/*" multiple>
       <input type="file" id="input-pdf" accept="application/pdf,.pdf" multiple>
     </div>
   </div>
@@ -229,7 +229,7 @@
       </div>
       <div class="setting-row">
         <span class="setting-label">追加メモ</span>
-        <input type="text" id="extra-note" placeholder="うれば入力…">
+        <input type="text" id="extra-note" placeholder="あれば入力…">
       </div>
     </div>
   </div>
@@ -497,13 +497,39 @@
       let name = file.name;
       // HEIC → JPEG 変換
       if (isHeic(file)) {
+        let converted = false;
+        // まずheic2anyで変換を試みる
         try {
           showToast('⏳ HEICをJPEGに変換中…');
-          const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 });
-          blob = Array.isArray(converted) ? converted[0] : converted;
+          const result = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 });
+          blob = Array.isArray(result) ? result[0] : result;
           name = name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg');
-        } catch(e) {
-          showToast('⚠️ HEIC変換失敗：' + e.message);
+          converted = true;
+        } catch(e) {}
+        // heic2any失敗時はブラウザのネイティブ対応でフォールバック（macOS Safari/Chrome等）
+        if (!converted) {
+          try {
+            const url = URL.createObjectURL(file);
+            const nativeDataUrl = await new Promise((res, rej) => {
+              const img = new Image();
+              img.onload = () => {
+                const c = document.createElement('canvas');
+                c.width = img.naturalWidth; c.height = img.naturalHeight;
+                c.getContext('2d').drawImage(img, 0, 0);
+                URL.revokeObjectURL(url);
+                res(c.toDataURL('image/jpeg', 0.85));
+              };
+              img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('非対応')); };
+              img.src = url;
+            });
+            const r2 = await fetch(nativeDataUrl);
+            blob = await r2.blob();
+            name = name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg');
+            converted = true;
+          } catch(e2) {}
+        }
+        if (!converted) {
+          showToast('⚠️ このHEICファイルは変換できませんでした');
           continue;
         }
       }
@@ -688,8 +714,8 @@
 【持ち物の抽出ルール（最重要・漏れなく）】
 ・「持ち物」「準備物」「持参」「必要なもの」「用意するもの」「ご準備」「ご用意」など、あらゆる表現を探す
 ・箇条書きだけでなく、文章の中に書かれた持ち物も必ず拾う
-・「〜を持参してください」「〜をご用意こださい」「〜が必要です」のような文も対象
-・よくある持ち物（弁当・お弁当、水筒、体操服・体操着、上靴・上履き、帽子・赤白帽・紅白帽、タオル、着替え、レジャーシート、雨具・カッパ・傘、リュックーランドセル・袋、なわ#��び、絵の具セット、習字道具・書道セット、裁縫道具、自由帳、色鉛筆、クレヨン・パス、のり・スティックのり、はさみ、定規、コンパス、分度器、彫刻刀・版画セット、エプロン・三角巾、マスク、防災頭巾、上ばき袋・体育館シューズ、水着・スイミングキャップ・ゴーグル、鍵盤ハーモニカ・リコーダー）は特に見落とさない
+・「〜を持参してください」「〜をご用意ください」「〜が必要です」のような文も対象
+・よくある持ち物（弁当・お弁当、水筒、体操服・体操着、上靴・上履き、帽子・赤白帽・紅白帽、タオル、着替え、レジャーシート、雨具・カッパ・傘、リュック・ランドセル・袋、なわとび、絵の具セット、習字道具・書道セット、裁縫道具、自由帳、色鉛筆、クレヨン・パス、のり・スティックのり、はさみ、定規、コンパス、分度器、彫刻刀・版画セット、エプロン・三角巾、マスク、防災頭巾、上ばき袋・体育館シューズ、水着・スイミングキャップ・ゴーグル、鍵盤ハーモニカ・リコーダー）は特に見落とさない
 ・持ち物は1アイテムごとに別々の要素にする（まとめて1つにしない）
 ・1冊・1本など数量の記載があれば含める（例: "色鉛筆（12色以上）"）
 ・持ち物が書かれていない場合のみ items:[]
